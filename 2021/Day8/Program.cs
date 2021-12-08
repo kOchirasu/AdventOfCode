@@ -48,7 +48,7 @@ namespace Day8 {
             int count = 0;
             foreach ((string[] a, string[] b) in input) {
                 var map = new Dictionary<string, int>();
-                var rmap = new Dictionary<int, string>();
+                var nums = new Number[10];
 
                 var map235 = new HashSet<string>();
                 var map069 = new HashSet<string>();
@@ -58,15 +58,15 @@ namespace Day8 {
                     switch (row.Length) {
                         case 2:
                             map[row] = 1;
-                            rmap[1] = row;
+                            nums[1] = new Number(1, new []{row});
                             break;
                         case 4:
                             map[row] = 4;
-                            rmap[4] = row;
+                            nums[4] = new Number(4, new []{row});
                             break;
                         case 3:
                             map[row] = 7;
-                            rmap[7] = row;
+                            nums[7] = new Number(7, new []{row});
                             break;
                         case 5: // 2, 3, 5, 
                             map235.Add(row);
@@ -76,24 +76,49 @@ namespace Day8 {
                             break;
                         case 7:
                             map[row] = 8;
-                            rmap[8] = row;
+                            nums[8] = new Number(8, new []{row});
                             break;
                     }
                 }
 
-                rmap[2] = map235.First(s => CountIntersect(s, rmap[4]) == 2);
-                map[rmap[2]] = 2;
-                rmap[3] = map235.First(s => CountIntersect(s, rmap[1]) == 2);
-                map[rmap[3]] = 3;
-                rmap[5] = map235.First(s => CountIntersect(s, rmap[4]) == 3 && CountIntersect(s, rmap[7]) == 2);
-                map[rmap[5]] = 5;
+                nums[2] = new Number(2, map235);
+                nums[3] = new Number(3, map235);
+                nums[5] = new Number(5, map235);
+                nums[0] = new Number(0, map069);
+                nums[6] = new Number(6, map069);
+                nums[9] = new Number(9, map069);
                 
-                rmap[0] = map069.First(s => CountIntersect(s, rmap[7]) == 3 && CountIntersect(s, rmap[4]) == 3);
-                map[rmap[0]] = 0;
-                rmap[6] = map069.First(s => CountIntersect(s, rmap[4]) == 3 && CountIntersect(s, rmap[1]) == 1);
-                map[rmap[6]] = 6;
-                rmap[9] = map069.First(s => CountIntersect(s, rmap[4]) == 4);
-                map[rmap[9]] = 9;
+                nums[0].AddCheck((1, 2), (2, 4), (3, 4), (4, 3), (5, 4), (6, 5), (7, 3), (8, 6), (9, 5));
+                nums[1].AddCheck((0, 2), (2, 1), (3, 2), (4, 2), (5, 1), (6, 1), (7, 2), (8, 2), (9, 2));
+                nums[2].AddCheck((0, 4), (1, 1), (3, 4), (4, 2), (5, 3), (6, 4), (7, 2), (8, 5), (9, 4));
+                nums[3].AddCheck((0, 4), (1, 2), (2, 4), (4, 3), (5, 4), (6, 4), (7, 3), (8, 5), (9, 5));
+                nums[4].AddCheck((0, 3), (1, 2), (2, 2), (3, 3), (5, 3), (6, 3), (7, 2), (8, 4), (9, 4));
+                nums[5].AddCheck((0, 4), (1, 1), (2, 3), (3, 4), (4, 3), (6, 5), (7, 2), (8, 5), (9, 5));
+                nums[6].AddCheck((0, 6), (1, 1), (2, 4), (3, 4), (4, 3), (5, 5), (7, 2), (8, 6), (9, 5));
+                nums[7].AddCheck((0, 3), (1, 2), (2, 2), (3, 3), (4, 2), (5, 2), (6, 2), (8, 3), (9, 3));
+                nums[8].AddCheck((0, 6), (1, 2), (2, 5), (3, 5), (4, 4), (5, 5), (6, 6), (7, 3), (9, 6));
+                nums[9].AddCheck((0, 5), (1, 2), (2, 4), (3, 5), (4, 4), (5, 5), (6, 5), (7, 3), (8, 6));
+
+                var remaining = new List<Number>(nums);
+                while (remaining.Count > 0) {
+                    bool mutated = false;
+                    for (int i = remaining.Count - 1; i >= 0; i--) {
+                        if (remaining[i].Found()) {
+                            map[remaining[i].Value()] = remaining[i].Digit;
+                            remaining.RemoveAt(i);
+                            mutated = true;
+                            continue;
+                        }
+                        
+                        foreach (Number n in nums) {
+                            mutated |= remaining[i].Check(n);
+                        }
+                    }
+
+                    if (!mutated) {
+                        throw new InvalidOperationException("No distinct solution.");
+                    }
+                }
 
                 int num = 0;
                 foreach (string row in b) {
@@ -107,7 +132,53 @@ namespace Day8 {
 
             return count;
         }
+    }
 
+    public class Number {
+        public readonly int Digit;
+        public readonly List<string> Values;
+        public readonly Dictionary<int, int> ToCheck;
+        
+        public Number(int digit, IEnumerable<string> values) {
+            Digit = digit;
+            Values = new List<string>(values);
+            ToCheck = new Dictionary<int, int>();
+        }
+
+        public bool Found() {
+            return Values.Count == 1;
+        }
+
+        public string Value() {
+            if (!Found()) {
+                return null;
+            }
+
+            return Values.First();
+        }
+
+        public void AddCheck(params (int, int)[] t) {
+            foreach ((int n, int count) in t) {
+                ToCheck[n] = count;
+            }
+        }
+
+        public bool Check(Number n) {
+            if (!n.Found() || !ToCheck.ContainsKey(n.Digit)) {
+                return false;
+            }
+
+            bool removed = false;
+            for (int i = Values.Count - 1; i >= 0; i--) {
+                if (CountIntersect(Values[i], n.Value()) != ToCheck[n.Digit]) {
+                    Values.RemoveAt(i);
+                    removed = true;
+                }
+            }
+
+            return removed;
+        }
+        
         private static int CountIntersect(string a, string b) {
             return a.ToCharArray().Intersect(b.ToCharArray()).Count();
         }
