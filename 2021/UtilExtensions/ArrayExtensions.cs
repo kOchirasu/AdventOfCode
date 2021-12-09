@@ -38,6 +38,19 @@ namespace UtilExtensions {
 
             return result;
         }
+        
+        public static TR[,] Select<T, TR>(this T[,] items, Func<T, TR> f) {
+            int rows = items.Rows();
+            int cols = items.Columns();
+            var result = new TR[rows, cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    result[i, j] = f(items[i, j]);
+                }
+            }
+                
+            return result;
+        }
 
         public static T[][] Jagged<T>(this T[,] arr) {
             int cols = arr.GetLength(0);

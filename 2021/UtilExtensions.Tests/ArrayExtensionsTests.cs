@@ -49,6 +49,24 @@ namespace UtilExtensions.Tests {
         }
 
         [Test]
+        public void SelectTest() {
+            int[,] array = new int[2, 4];
+            array[0, 0] = 1;
+            array[1, 1] = 4;
+            array[1, 2] = 9;
+
+            bool[,] result = array.Select(n => n % 2 == 0);
+            Assert.AreEqual(array.Rows(), result.Rows());
+            Assert.AreEqual(array.Columns(), result.Columns());
+            
+            bool[,] expect = {
+                {false, true, true, true},
+                {true, true, false, true},
+            };
+            Assert.AreEqual(expect, result);
+        }
+
+        [Test]
         public void ConversionTest() {
             int[,] array = new int[2, 4];
             array[0, 0] = 10;

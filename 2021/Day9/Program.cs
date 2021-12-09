@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UtilExtensions;
 
 namespace Day9 {
     // https://adventofcode.com/
     public static class Program {
-        private static int xMax;
-        private static int yMax;
+        private static readonly (int, int)[] Offsets = {(-1, 0), (0, -1), (1, 0), (0, 1)};
         
         public static void Main() {
             string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
             var input = File.ReadAllLines(file).Select(row => row.ToCharArray()).ToArray();
-            xMax = input.Length;
-            yMax = input[0].Length;
-            int[,] heights = new int[xMax, yMax];
-            for (int i = 0; i < xMax; i++) {
-                for (int j = 0; j < yMax; j++) {
+            int[,] heights = new int[input.Length, input[0].Length];
+            for (int i = 0; i < heights.Rows(); i++) {
+                for (int j = 0; j < heights.Columns(); j++) {
                     heights[i, j] = input[i][j] - '0';
                 }
             }
@@ -27,27 +25,24 @@ namespace Day9 {
 
         private static int Part1(int[,] heights) {
             int sum = 0;
-            for (int i = 0; i < xMax; i++) {
-                for (int j = 0; j < yMax; j++) {
+            for (int i = 0; i < heights.Rows(); i++) {
+                for (int j = 0; j < heights.Columns(); j++) {
                     if (heights[i, j] == 9) {
                         continue;
                     }
 
+                    bool skip = false;
                     int v = heights[i, j];
-                    if (i - 1 >= 0 && heights[i - 1, j] <= v) {
-                        continue;
+                    foreach ((int dx, int dy) in Offsets) {
+                        if (heights.TryGet(i + dx, j + dy, out int get) && get <= v) {
+                            skip = true;
+                            break;
+                        }
                     }
-                    if (j - 1 >= 0 && heights[i, j - 1] <= v) {
-                        continue;
+                    
+                    if (!skip) {
+                        sum += v + 1;
                     }
-                    if (i + 1 < xMax && heights[i + 1, j] <= v) {
-                        continue;
-                    }
-                    if (j + 1 < yMax && heights[i, j + 1] <= v) {
-                        continue;
-                    }
-
-                    sum += v + 1;
                 }
             }
             
@@ -56,9 +51,9 @@ namespace Day9 {
 
         private static int Part2(int[,] heights) {
             var basins = new List<int>();
-            for (int i = 0; i < xMax; i++) {
-                for (int j = 0; j < yMax; j++) {
-                    var size = BasinSize(heights, i, j);
+            for (int i = 0; i < heights.Rows(); i++) {
+                for (int j = 0; j < heights.Columns(); j++) {
+                    int size = BasinSize(heights, i, j);
                     if (size == 0) {
                         continue;
                     }
@@ -78,17 +73,10 @@ namespace Day9 {
             if (v == 9) {
                 return 0;
             }
-            
-            bool[,] marked = new bool[xMax, yMax];
+
             // Height 9 is not included in basin
-            for (int i = 0; i < xMax; i++) {
-                for (int j = 0; j < yMax; j++) {
-                    if (heights[i, j] == 9) {
-                        marked[i, j] = true;
-                    }
-                }
-            }
-            
+            bool[,] marked = heights.Select(height => height == 9);
+
             int size = 0;
             var q = new Queue<(int, int, int)>();
             q.Enqueue((a, b, v));
@@ -99,25 +87,14 @@ namespace Day9 {
                 b = next.b;
                 v = next.v;
                 
-                if (a - 1 >= 0 && heights[a - 1, b] > v && !marked[a - 1, b]) {
-                    q.Enqueue((a - 1, b, heights[a - 1, b]));
-                    marked[a - 1, b] = true;
-                    size++;
-                }
-                if (b - 1 >= 0 && heights[a, b - 1] > v && !marked[a, b - 1]) {
-                    q.Enqueue((a, b - 1, heights[a, b - 1]));
-                    marked[a, b - 1] = true;
-                    size++;
-                }
-                if (a + 1 < xMax && heights[a + 1, b] > v && !marked[a + 1, b]) {
-                    q.Enqueue((a + 1, b, heights[a + 1, b]));
-                    marked[a + 1, b] = true;
-                    size++;
-                }
-                if (b + 1 < yMax && heights[a, b + 1] > v && !marked[a, b + 1]) {
-                    q.Enqueue((a, b + 1, heights[a, b + 1]));
-                    marked[a, b + 1] = true;
-                    size++;
+                foreach ((int dx, int dy) in Offsets) {
+                    int row = a + dx;
+                    int col = b + dy;
+                    if (heights.TryGet(row, col, out int get) && get > v && !marked[row, col]) {
+                        q.Enqueue((row, col, get));
+                        marked[row, col] = true;
+                        size++;
+                    }
                 }
             }
 
