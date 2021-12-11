@@ -49,6 +49,56 @@ namespace UtilExtensions.Tests {
         }
 
         [Test]
+        public void RotateTest() {
+            int[,] rot0 = {
+                {0, 1, 2},
+                {3, 4, 5},
+            };
+            Assert.AreEqual(rot0, rot0.Rotate(0));
+            Assert.AreEqual(rot0, rot0.Rotate(4));
+            
+            int[,] rot90 = {
+                {3, 0},
+                {4, 1},
+                {5, 2},
+            };
+            Assert.AreEqual(rot90, rot0.Rotate());
+            
+            int[,] rot180 = {
+                {5, 4, 3},
+                {2, 1, 0},
+            };
+            Assert.AreEqual(rot180, rot0.Rotate(2));
+            
+            int[,] rot270 = {
+                {2, 5},
+                {1, 4},
+                {0, 3},
+            };
+            Assert.AreEqual(rot270, rot0.Rotate(3));
+        }
+
+        [Test]
+        public void ReflectTest() {
+            int[,] array = {
+                {0, 1, 2},
+                {3, 4, 5},
+            };
+
+            int[,] reflectH = {
+                {2, 1, 0},
+                {5, 4, 3},
+            };
+            Assert.AreEqual(reflectH, array.Reflect());
+            
+            int[,] reflectV = {
+                {3, 4, 5},
+                {0, 1, 2},
+            };
+            Assert.AreEqual(reflectV, array.Reflect(ArrayExtensions.Axis.Vertical));
+        }
+
+        [Test]
         public void SelectTest() {
             int[,] array = new int[2, 4];
             array[0, 0] = 1;

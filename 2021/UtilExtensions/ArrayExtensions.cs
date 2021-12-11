@@ -4,6 +4,11 @@ using System.Text;
 
 namespace UtilExtensions {
     public static class ArrayExtensions {
+        public enum Axis {
+            Horizontal,
+            Vertical,
+        }
+        
         public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
         public static int Columns<T>(this T[,] arr) => arr.GetLength(1);
         
@@ -38,7 +43,54 @@ namespace UtilExtensions {
 
             return result;
         }
-        
+
+        public static T[,] Rotate<T>(this T[,] arr, int n = 1) {
+            n = (n + 4) % 4; // 0, 1, 2, 3 rotations only
+            
+            T[,] result = arr;
+            while (n > 0) {
+                int rows = result.Columns();
+                int cols = result.Rows();
+                var next = new T[rows, cols];
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        next[i, j] = result[cols - j - 1, i];
+                    }
+                }
+
+                result = next;
+                n--;
+            }
+
+            return result;
+        }
+
+        public static T[,] Reflect<T>(this T[,] arr, Axis axis = Axis.Horizontal) {
+            int rows = arr.Rows();
+            int cols = arr.Columns();
+            var result = new T[rows, cols];
+            switch (axis) {
+                case Axis.Horizontal:
+                    for (int i = 0; i < rows; i++) {
+                        for (int j = 0; j < cols; j++) {
+                            result[i, j] = arr[i, cols - j - 1];
+                        }
+                    }
+                    
+                    return result;
+                case Axis.Vertical:
+                    for (int i = 0; i < rows; i++) {
+                        for (int j = 0; j < cols; j++) {
+                            result[i, j] = arr[rows - i - 1, j];
+                        }
+                    }
+                    
+                    return result;
+                default:
+                    throw new ArgumentException($"Invalid axis: {axis}");
+            }
+        }
+
         public static TR[,] Select<T, TR>(this T[,] items, Func<T, TR> f) {
             int rows = items.Rows();
             int cols = items.Columns();
