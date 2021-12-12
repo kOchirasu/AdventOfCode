@@ -8,7 +8,7 @@ namespace UtilExtensions {
             Horizontal,
             Vertical,
         }
-        
+
         public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
         public static int Columns<T>(this T[,] arr) => arr.GetLength(1);
 
@@ -21,7 +21,7 @@ namespace UtilExtensions {
             value = arr[n];
             return true;
         }
-        
+
         public static T[] Shift<T>(this T[] arr, int n, T extend = default) {
             n %= arr.Length;
             (int src, int dst) shift = default;
@@ -37,7 +37,7 @@ namespace UtilExtensions {
                     fill = 0;
                     break;
             }
-            
+
             var result = new T[arr.Length];
             Array.Copy(arr, shift.src, result, shift.dst, arr.Length - n);
             if (extend != null) {
@@ -46,7 +46,7 @@ namespace UtilExtensions {
 
             return result;
         }
-        
+
         public static T[] CircularShift<T>(this T[] arr, int n) {
             n %= arr.Length;
             (int src, int dst) shift = default;
@@ -62,14 +62,14 @@ namespace UtilExtensions {
                     wrap.src = n - 1;
                     break;
             }
-            
+
             var result = new T[arr.Length];
             Array.Copy(arr, shift.src, result, shift.dst, arr.Length - n);
             Array.Copy(arr, wrap.src, result, wrap.dst, n);
 
             return result;
         }
-        
+
         public static bool TryGet<T>(this T[,] arr, int row, int col, out T value) {
             if (row < 0 || col < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1)) {
                 value = default;
@@ -82,8 +82,8 @@ namespace UtilExtensions {
 
         public static T[] GetColumn<T>(this T[,] arr, int col) {
             int length = arr.GetLength(0);
-            
-            var result = new T[length]; 
+
+            var result = new T[length];
             for (int i = 0; i < length; i++) {
                 result[i] = arr[i, col];
             }
@@ -91,10 +91,25 @@ namespace UtilExtensions {
             return result;
         }
 
+        public static void SetColumn<T>(this T[,] arr, int col, T[] data) {
+            int cols = arr.Columns();
+            if (col < 0 || col >= cols) {
+                throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
+            }
+            int rows = arr.Rows();
+            if (rows != data.Length) {
+                throw new ArgumentException($"SetColumn with invalid length: {data.Length} != {rows}");
+            }
+
+            for (int i = 0; i < rows; i++) {
+                arr[i, col] = data[i];
+            }
+        }
+
         public static T[] GetRow<T>(this T[,] arr, int row) {
             int length = arr.GetLength(1);
-            
-            var result = new T[length]; 
+
+            var result = new T[length];
             for (int i = 0; i < length; i++) {
                 result[i] = arr[row, i];
             }
@@ -102,9 +117,49 @@ namespace UtilExtensions {
             return result;
         }
 
+        public static void SetRow<T>(this T[,] arr, int row, T[] data) {
+            int rows = arr.Rows();
+            if (row < 0 || row >= rows) {
+                throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
+            }
+            int cols = arr.Columns();
+            if (cols != data.Length) {
+                throw new ArgumentException($"SetColumn with invalid length: {data.Length} != {cols}");
+            }
+
+            for (int i = 0; i < cols; i++) {
+                arr[row, i] = data[i];
+            }
+        }
+
+        public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true) {
+            if (strictBounds && (row < 0 || col < 0)) {
+                throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
+            }
+
+            int rows = arr.Rows();
+            int cols = arr.Columns();
+            int iRows = insert.Rows();
+            int iCols = insert.Columns();
+            if (strictBounds && (row + iRows > rows || col + iCols > cols)) {
+                throw new IndexOutOfRangeException($"Cannot insert ({iRows}, {iCols}) into ({rows}, {cols}) at ({row}, {col}).");
+            }
+
+            for (int i = 0; i < iRows; i++) {
+                for (int j = 0; j < iCols; j++) {
+                    if (!strictBounds) {
+                        if (row + i < 0 || row + i >= rows) continue;
+                        if (col + j < 0 || col + j >= cols) continue;
+                    }
+
+                    arr[row + i, col + j] = insert[i, j];
+                }
+            }
+        }
+
         public static T[,] Rotate<T>(this T[,] arr, int n = 1) {
             n = (n + 4) % 4; // 0, 1, 2, 3 rotations only
-            
+
             T[,] result = arr;
             while (n > 0) {
                 int rows = result.Columns();
@@ -134,7 +189,7 @@ namespace UtilExtensions {
                             result[i, j] = arr[i, cols - j - 1];
                         }
                     }
-                    
+
                     return result;
                 case Axis.Vertical:
                     for (int i = 0; i < rows; i++) {
@@ -142,7 +197,7 @@ namespace UtilExtensions {
                             result[i, j] = arr[rows - i - 1, j];
                         }
                     }
-                    
+
                     return result;
                 default:
                     throw new ArgumentException($"Invalid axis: {axis}");
@@ -158,7 +213,37 @@ namespace UtilExtensions {
                     result[i, j] = f(items[i, j]);
                 }
             }
-                
+
+            return result;
+        }
+
+        public static TR[,] Compose<T1, T2, TR>(this T1[,] arr1, T2[,] arr2, Func<T1, T2, TR> f) {
+            int rows = arr1.Rows();
+            int cols = arr1.Columns();
+            if (rows != arr2.Rows() || cols != arr2.Columns()) {
+                throw new ArgumentException("Cannot compose arrays of different dimensions.");
+            }
+
+            var result = new TR[rows, cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    result[i, j] = f(arr1[i, j], arr2[i, j]);
+                }
+            }
+
+            return result;
+        }
+
+        public static T[,] Resize<T>(this T[,] arr, uint addRows, uint addCols) {
+            int rows = arr.Rows();
+            int cols = arr.Columns();
+            var result = new T[rows + addRows, cols + addCols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    result[i, j] = arr[i, j];
+                }
+            }
+
             return result;
         }
 
@@ -171,7 +256,7 @@ namespace UtilExtensions {
 
             return result;
         }
-        
+
         public static T[,] UnJagged<T>(this T[][] arr, bool expand = false) {
             int rows = arr.Length;
             int cols = arr[0].Length;
