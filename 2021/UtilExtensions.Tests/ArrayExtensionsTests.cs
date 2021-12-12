@@ -8,6 +8,39 @@ namespace UtilExtensions.Tests {
 
         [Test]
         public void TryGetTest() {
+            int[] array = {1, 2, 3, 4, 5};
+            
+            Assert.True(array.TryGet(2, out int val));
+            Assert.AreEqual(3, val);
+            
+            // Out of bounds
+            Assert.False(array.TryGet(-1, out int _));
+            Assert.False(array.TryGet(5, out int _));
+        }
+
+        [Test]
+        public void ShiftTest() {
+            int[] array = {1, 2, 3, 4, 5};
+            
+            Assert.AreEqual(array, array.Shift(0));
+            Assert.AreEqual(new []{4, 5, 0, 0, 0}, array.Shift(-3));
+            Assert.AreEqual(new []{0, 0, 0, 1, 2}, array.Shift(3));
+            Assert.AreEqual(array, array.Shift(0, -1));
+            Assert.AreEqual(new []{4, 5, 7, 7, 7}, array.Shift(-3, 7));
+            Assert.AreEqual(new []{7, 7, 7, 1, 2}, array.Shift(3, 7));
+        }
+        
+        [Test]
+        public void CircularShiftTest() {
+            int[] array = {1, 2, 3, 4, 5};
+            
+            Assert.AreEqual(array, array.CircularShift(0));
+            Assert.AreEqual(new []{4, 5, 1, 2, 3}, array.CircularShift(-3));
+            Assert.AreEqual(new []{3, 4, 5, 1, 2}, array.CircularShift(3));
+        }
+
+        [Test]
+        public void TryGet2DTest() {
             int[,] array = new int[2, 4];
             array[0, 0] = 10;
             array[1, 2] = 20;

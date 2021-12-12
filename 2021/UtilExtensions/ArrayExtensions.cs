@@ -11,6 +11,64 @@ namespace UtilExtensions {
         
         public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
         public static int Columns<T>(this T[,] arr) => arr.GetLength(1);
+
+        public static bool TryGet<T>(this T[] arr, int n, out T value) {
+            if (n < 0 || n >= arr.Length) {
+                value = default;
+                return false;
+            }
+
+            value = arr[n];
+            return true;
+        }
+        
+        public static T[] Shift<T>(this T[] arr, int n, T extend = default) {
+            n %= arr.Length;
+            (int src, int dst) shift = default;
+            int fill = 0;
+            switch (n) {
+                case < 0: // Shift Left
+                    n *= -1;
+                    shift.src = n;
+                    fill = n - 1;
+                    break;
+                case > 0: // Shift Right
+                    shift.dst = n;
+                    fill = 0;
+                    break;
+            }
+            
+            var result = new T[arr.Length];
+            Array.Copy(arr, shift.src, result, shift.dst, arr.Length - n);
+            if (extend != null) {
+                Array.Fill(result, extend, fill, n);
+            }
+
+            return result;
+        }
+        
+        public static T[] CircularShift<T>(this T[] arr, int n) {
+            n %= arr.Length;
+            (int src, int dst) shift = default;
+            (int src, int dst) wrap = default;
+            switch (n) {
+                case < 0: // CircularShift Left
+                    n *= -1;
+                    shift.src = n;
+                    wrap.dst = n - 1;
+                    break;
+                case > 0: // CircularShift Right
+                    shift.dst = n;
+                    wrap.src = n - 1;
+                    break;
+            }
+            
+            var result = new T[arr.Length];
+            Array.Copy(arr, shift.src, result, shift.dst, arr.Length - n);
+            Array.Copy(arr, wrap.src, result, wrap.dst, n);
+
+            return result;
+        }
         
         public static bool TryGet<T>(this T[,] arr, int row, int col, out T value) {
             if (row < 0 || col < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1)) {
