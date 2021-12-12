@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using UtilExtensions;
+using static UtilExtensions.ArrayExtensions;
 
 namespace Day11 {
     // https://adventofcode.com/
@@ -11,7 +12,7 @@ namespace Day11 {
             var input = File.ReadAllLines(file).Select(row => {
                 return row.ToCharArray().Select(c => c - '0').ToArray();
             }).ToArray();
-            
+
             Console.WriteLine(Part1(input.UnJagged()));
             Console.WriteLine(Part2(input.UnJagged()));
         }
@@ -31,7 +32,7 @@ namespace Day11 {
                         Flash(input, done, i, j);
                     }
                 }
-            
+
                 // reset flashed
                 for (int i = 0; i < 10; i++) {
                     for (int j = 0; j < 10; j++) {
@@ -42,7 +43,7 @@ namespace Day11 {
                     }
                 }
             }
-            
+
             return flashes;
         }
 
@@ -60,7 +61,7 @@ namespace Day11 {
                         Flash(input, done, i, j);
                     }
                 }
-                
+
                 int flashes = 0;
                 for (int i = 0; i < 10; i++) {
                     for (int j = 0; j < 10; j++) {
@@ -76,24 +77,16 @@ namespace Day11 {
                 }
             }
         }
-        
+
         private static void Flash(int[,] input, bool[,] done, int row, int col) {
             if (input[row, col] <= 9 || done[row, col]) {
                 return;
             }
-            
-            done[row, col] = true;
-            for (int i = row + -1; i <= row + 1; i++) {
-                for (int j = col + -1; j <= col + 1; j++) {
-                    if (i == row && j == col) {
-                        continue;
-                    }
 
-                    if (input.TryGet(i, j, out int _)) {
-                        input[i, j]++;
-                        Flash(input, done, i, j);
-                    }
-                }
+            done[row, col] = true;
+            foreach ((int r, int c) in input.Adjacent(row, col, Directions.All)) {
+                input[r, c]++;
+                Flash(input, done, r, c);
             }
         }
     }

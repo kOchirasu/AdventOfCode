@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -7,6 +8,24 @@ namespace UtilExtensions {
         public enum Axis {
             Horizontal,
             Vertical,
+        }
+
+        [Flags]
+        public enum Directions {
+            Origin = 1,
+            N = 2,
+            E = 4,
+            S = 8,
+            W = 16,
+            NE = 32,
+            SE = 64,
+            SW = 128,
+            NW = 256,
+            Wrap = 512,
+
+            Cardinal = N | E | S | W,
+            Intermediate = NE | SE | SW | NW,
+            All = Cardinal | Intermediate,
         }
 
         public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
@@ -202,6 +221,54 @@ namespace UtilExtensions {
                 default:
                     throw new ArgumentException($"Invalid axis: {axis}");
             }
+        }
+
+        public static IEnumerable<(int, int)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir) {
+            int rows = arr.Rows();
+            int cols = arr.Columns();
+            bool wrap = dir.HasFlag(Directions.Wrap);
+
+            var result = new List<(int, int)>();
+            void AddIfNeeded(int r, int c) {
+                if (wrap) {
+                    r = (r + rows) % rows;
+                    c = (c + cols) % cols;
+                }
+
+                if (arr.TryGet(r, c, out T _)) {
+                    result.Add((r, c));
+                }
+            }
+
+            if (dir.HasFlag(Directions.Origin)) {
+                result.Add((row, col));
+            }
+            if (dir.HasFlag(Directions.N)) {
+                AddIfNeeded(row, col - 1);
+            }
+            if (dir.HasFlag(Directions.E)) {
+                AddIfNeeded(row + 1, col);
+            }
+            if (dir.HasFlag(Directions.S)) {
+                AddIfNeeded(row, col + 1);
+            }
+            if (dir.HasFlag(Directions.W)) {
+                AddIfNeeded(row - 1, col);
+            }
+            if (dir.HasFlag(Directions.NE)) {
+                AddIfNeeded(row + 1, col - 1);
+            }
+            if (dir.HasFlag(Directions.SE)) {
+                AddIfNeeded(row + 1, col + 1);
+            }
+            if (dir.HasFlag(Directions.SW)) {
+                AddIfNeeded(row - 1, col + 1);
+            }
+            if (dir.HasFlag(Directions.NW)) {
+                AddIfNeeded(row - 1, col - 1);
+            }
+
+            return result;
         }
 
         public static TR[,] Select<T, TR>(this T[,] items, Func<T, TR> f) {

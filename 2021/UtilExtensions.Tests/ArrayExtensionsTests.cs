@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using static UtilExtensions.ArrayExtensions;
 
 namespace UtilExtensions.Tests {
     public class ArrayExtensionsTests {
@@ -166,7 +167,23 @@ namespace UtilExtensions.Tests {
                 {3, 4, 5},
                 {0, 1, 2},
             };
-            Assert.AreEqual(reflectV, array.Reflect(ArrayExtensions.Axis.Vertical));
+            Assert.AreEqual(reflectV, array.Reflect(Axis.Vertical));
+        }
+
+        [Test]
+        public void AdjacentTest() {
+            int[,] array = new int[3, 3];
+
+            CollectionAssert.AreEquivalent(new []{(2, 2)},
+                array.Adjacent(2, 2, Directions.Origin));
+            CollectionAssert.AreEquivalent(new []{(0, 1), (1, 0)},
+                array.Adjacent(0, 0, Directions.Cardinal));
+            CollectionAssert.AreEquivalent(new []{(1, 1)},
+                array.Adjacent(0, 0, Directions.Intermediate));
+            CollectionAssert.AreEquivalent(new []{(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)},
+                array.Adjacent(1, 1, Directions.All));
+            CollectionAssert.AreEquivalent(new []{(0, 2), (1, 0), (1, 1), (2, 2)},
+                array.Adjacent(1, 2, Directions.Cardinal | Directions.Wrap));
         }
 
         [Test]
