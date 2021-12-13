@@ -89,6 +89,27 @@ namespace UtilExtensions.Tests {
         }
 
         [Test]
+        public void CloneTest() {
+            int[,] array = {
+                {1, 2, 3},
+                {4, 5, 6},
+            };
+
+            Assert.AreEqual(array, array.Clone(0, 0));
+            Assert.Throws<IndexOutOfRangeException>(() => array.Clone(-1, 0));
+            Assert.Throws<IndexOutOfRangeException>(() => array.Clone(0, -1));
+            Assert.Throws<IndexOutOfRangeException>(() => array.Clone(0, 0, -1));
+            Assert.Throws<IndexOutOfRangeException>(() => array.Clone(0, 0, 0, -1));
+
+            int[,] clone1 = {
+                {1, 2},
+                {4, 5},
+            };
+            Assert.AreEqual(clone1, array.Clone(0, 0, 2, 2));
+            Assert.AreEqual(new [,]{{4, 5, 6}}, array.Clone(1, 0, 1, 3));
+        }
+
+        [Test]
         public void InsertTest() {
             int[,] array = new int[3, 3];
             int[,] insert1 = {

@@ -151,6 +151,26 @@ namespace UtilExtensions {
             }
         }
 
+        public static T[,] Clone<T>(this T[,] arr, int row, int col, int rows = int.MaxValue, int cols = int.MaxValue) {
+            if (row < 0 || col < 0) {
+                throw new IndexOutOfRangeException("Index was out of range. Must be non-negative.");
+            }
+            if (rows < 0 || cols < 0) {
+                throw new IndexOutOfRangeException("Size was out of range. Must be non-negative.");
+            }
+            rows = Math.Min(arr.Rows() - row, rows);
+            cols = Math.Min(arr.Columns() - col, cols);
+
+            var result = new T[rows, cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    result[i, j] = arr[i + row, j + col];
+                }
+            }
+
+            return result;
+        }
+
         public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true) {
             if (strictBounds && (row < 0 || col < 0)) {
                 throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");

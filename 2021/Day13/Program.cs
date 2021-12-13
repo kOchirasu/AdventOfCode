@@ -8,8 +8,8 @@ using static UtilExtensions.ArrayExtensions;
 namespace Day13 {
     // https://adventofcode.com/
     public static class Program {
-        private static int xMax = 0;
-        private static int yMax = 0;
+        private static int xMax;
+        private static int yMax;
 
         public static void Main() {
             string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
@@ -49,24 +49,19 @@ namespace Day13 {
             (Axis axis, int fold) = folds[0];
             char[,] a, b;
             switch (axis) {
-                case Axis.Vertical: {
-                    a = new char[fold, grid.Columns()];
-                    b = new char[fold, grid.Columns()];
-
+                case Axis.Vertical: { // X
+                    a = grid.Clone(0, 0, fold, grid.Columns());
+                    b = grid.Clone(fold + 1, 0, fold, grid.Columns()).Reflect(axis);
                     break;
                 }
-                case Axis.Horizontal: {
-                    a = new char[grid.Rows(), fold];
-                    b = new char[grid.Rows(), fold];
+                case Axis.Horizontal: { // Y
+                    a = grid.Clone(0, 0, grid.Rows(), fold);
+                    b = grid.Clone(0, fold + 1, grid.Rows(), fold).Reflect(axis);
                     break;
                 }
                 default:
                     throw new ArgumentException("Invalid axis.");
             }
-
-            a.Insert(grid, 0, 0, false);
-            char[,] flip = grid.Reflect(axis);
-            b.Insert(flip, 0, 0, false);
 
             char[,] merged = a.Compose(b, (aC, bC) => aC == '#' || bC == '#' ? '#' : '.');
             return merged.Cast<char>().Count(c => c == '#');
@@ -82,24 +77,19 @@ namespace Day13 {
             foreach ((Axis axis, int fold) in folds) {
                 char[,] a, b;
                 switch (axis) {
-                    case Axis.Vertical: {
-                        a = new char[fold, grid.Columns()];
-                        b = new char[fold, grid.Columns()];
-
+                    case Axis.Vertical: { // X
+                        a = grid.Clone(0, 0, fold, grid.Columns());
+                        b = grid.Clone(fold + 1, 0, fold, grid.Columns()).Reflect(axis);
                         break;
                     }
-                    case Axis.Horizontal: {
-                        a = new char[grid.Rows(), fold];
-                        b = new char[grid.Rows(), fold];
+                    case Axis.Horizontal: { // Y
+                        a = grid.Clone(0, 0, grid.Rows(), fold);
+                        b = grid.Clone(0, fold + 1, grid.Rows(), fold).Reflect(axis);
                         break;
                     }
                     default:
                         throw new ArgumentException("Invalid axis.");
                 }
-
-                a.Insert(grid, 0, 0, false);
-                char[,] flip = grid.Reflect(axis);
-                b.Insert(flip, 0, 0, false);
 
                 char[,] merged = a.Compose(b, (aC, bC) => aC == '#' || bC == '#' ? '#' : '.');
                 grid = merged;
