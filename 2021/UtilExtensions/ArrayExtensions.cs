@@ -28,6 +28,17 @@ namespace UtilExtensions {
             All = Cardinal | Intermediate,
         }
 
+        private static readonly (Directions, int, int)[] Offsets = {
+            (Directions.N, 0, -1),
+            (Directions.E, 1, 0),
+            (Directions.S, 0, 1),
+            (Directions.W, -1, 0),
+            (Directions.NE, 1, -1),
+            (Directions.SE, 1, 1),
+            (Directions.SW, -1, 1),
+            (Directions.NW, -1, -1),
+        };
+
         public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
         public static int Columns<T>(this T[,] arr) => arr.GetLength(1);
 
@@ -244,51 +255,27 @@ namespace UtilExtensions {
         }
 
         public static IEnumerable<(int, int)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir) {
+            if ((dir & Directions.Origin) != 0) {
+                yield return (row, col);
+            }
+
             int rows = arr.Rows();
             int cols = arr.Columns();
-            bool wrap = dir.HasFlag(Directions.Wrap);
+            bool wrap = (dir & Directions.Wrap) != 0;
+            foreach ((Directions d, int dX, int dY) in Offsets) {
+                if ((dir & d) == 0) continue;
 
-            var result = new List<(int, int)>();
-            void AddIfNeeded(int r, int c) {
+                int r = row + dX;
+                int c = col + dY;
                 if (wrap) {
                     r = (r + rows) % rows;
                     c = (c + cols) % cols;
                 }
 
                 if (arr.TryGet(r, c, out T _)) {
-                    result.Add((r, c));
+                    yield return (r, c);
                 }
             }
-
-            if (dir.HasFlag(Directions.Origin)) {
-                result.Add((row, col));
-            }
-            if (dir.HasFlag(Directions.N)) {
-                AddIfNeeded(row, col - 1);
-            }
-            if (dir.HasFlag(Directions.E)) {
-                AddIfNeeded(row + 1, col);
-            }
-            if (dir.HasFlag(Directions.S)) {
-                AddIfNeeded(row, col + 1);
-            }
-            if (dir.HasFlag(Directions.W)) {
-                AddIfNeeded(row - 1, col);
-            }
-            if (dir.HasFlag(Directions.NE)) {
-                AddIfNeeded(row + 1, col - 1);
-            }
-            if (dir.HasFlag(Directions.SE)) {
-                AddIfNeeded(row + 1, col + 1);
-            }
-            if (dir.HasFlag(Directions.SW)) {
-                AddIfNeeded(row - 1, col + 1);
-            }
-            if (dir.HasFlag(Directions.NW)) {
-                AddIfNeeded(row - 1, col - 1);
-            }
-
-            return result;
         }
 
         public static TR[,] Select<T, TR>(this T[,] items, Func<T, TR> f) {

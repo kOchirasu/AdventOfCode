@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using UtilExtensions;
 using static UtilExtensions.ArrayExtensions;
 
@@ -22,7 +20,7 @@ namespace Day15 {
         private static int Part1(int[,] input) {
             int[,] dpMatrix = input.Select(i => int.MaxValue);
             dpMatrix[0, 0] = 0;
-            
+
             int risk = int.MaxValue;
             while (true) {
                 bool updated = false;
@@ -54,7 +52,7 @@ namespace Day15 {
                     newInput.Insert(incInput, i * rows, j * cols);
                 }
             }
-            
+
             int[,] dpMatrix = newInput.Select(i => int.MaxValue);
             dpMatrix[0, 0] = 0;
 
@@ -67,7 +65,7 @@ namespace Day15 {
                         updated |= Dp(dpMatrix, newInput, i, j);
                     }
                 }
-                
+
                 if (!updated) {
                     break;
                 }
@@ -77,7 +75,7 @@ namespace Day15 {
 
             return risk;
         }
-        
+
         private static bool Dp(int[,] dpMatrix, int[,] input, int r, int c) {
             int min = int.MaxValue;
             foreach ((int nR, int nC) in input.Adjacent(r, c, Directions.Cardinal)) {
@@ -95,7 +93,7 @@ namespace Day15 {
                 dpMatrix[r, c] = newValue;
                 return true;
             }
-            
+
             return false;
         }
     }
