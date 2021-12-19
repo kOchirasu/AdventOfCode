@@ -21,6 +21,18 @@ namespace UtilExtensions.Trees {
             return Root.GetEnumerator(traversal);
         }
 
+        public BinaryTree<TR> Select<TR>(Func<T, TR> f) {
+            return new BinaryTree<TR>(Root.Select(f));
+        }
+
+        public T Aggregate(Func<BinaryNode<T>, T, T, T> agg) {
+            return Root.Aggregate(agg);
+        }
+
+        public TR Aggregate<TR>(Func<BinaryNode<T>, TR> val, Func<TR, TR, TR> agg) {
+            return Root.Aggregate(val, agg);
+        }
+
         public override string ToString() {
             return Root.ToString();
         }

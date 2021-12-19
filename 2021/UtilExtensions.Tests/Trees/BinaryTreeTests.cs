@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 using UtilExtensions.Trees;
 
@@ -225,6 +226,68 @@ namespace UtilExtensions.Tests.Trees {
 
             Assert.AreEqual(h, h.Min());
             Assert.AreEqual(h, h.Max());
+        }
+
+        [Test]
+        public void SelectTest() {
+            BinaryTree<string> lowerTree = tree.Select(value => value.ToLower());
+            string upper = string.Join(",", tree.GetEnumerator().Select(node => node.Value));
+            string lower = string.Join(",", lowerTree.GetEnumerator().Select(node => node.Value));
+            Assert.AreEqual(upper.ToLower(), lower);
+        }
+
+        [Test]
+        public void AggregateTest() {
+            // Convert tree to string bracket representation.
+            string exp = tree.Aggregate(
+                (parent, left, right) => {
+                    var builder = new StringBuilder(parent?.Value);
+                    if (left != null) {
+                        builder.Append($"({left})");
+                    }
+                    if (right != null) {
+                        builder.Append($"({right})");
+                    }
+
+                    return builder.ToString();
+                });
+            Assert.AreEqual("F(B(A)(D(C)(E)))(G(I(H)))", exp);
+
+            // Leaf aggregation as bracket notation with/without parent aggregation.
+            string LeafCsv(string left, string right) {
+                var builder = new StringBuilder();
+                if (left != null) {
+                    builder.Append($"[{left}]");
+                }
+                if (left != null && right != null) {
+                    builder.Append(',');
+                }
+                if (right != null) {
+                    builder.Append($"[{right}]");
+                }
+
+                return builder.ToString();
+            }
+
+            string expAsLeaf = tree.Aggregate(
+                (parent, left, right) => {
+                    if (parent.IsLeaf()) {
+                        return parent.Value;
+                    }
+
+                    return LeafCsv(left, right);
+                });
+            Assert.AreEqual("[[A],[[C],[E]]],[[[H]]]", expAsLeaf);
+
+            string leafExp = tree.Aggregate(node => node?.Value, LeafCsv);
+            Assert.AreEqual("[[A],[[C],[E]]],[[[H]]]", leafExp);
+
+            // Sum leaves/nodes in tree.
+            BinaryTree<int> intTree = tree.Select(value => value[0] - 'A');
+            int leafSum = intTree.Aggregate(node => node?.Value ?? 0, (left, right) => left + right);
+            Assert.AreEqual(13, leafSum);
+            int nodeSum = intTree.Aggregate((parent, left, right) => parent.Value + left + right);
+            Assert.AreEqual(36, nodeSum);
         }
     }
 }

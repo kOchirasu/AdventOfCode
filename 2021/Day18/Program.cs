@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using UtilExtensions.Trees;
 
 namespace Day18 {
     // https://adventofcode.com/
@@ -14,6 +14,7 @@ namespace Day18 {
             Console.WriteLine(Part1(input));
             Console.WriteLine(Part2(input));
         }
+
         private static int Part1(string[] input) {
             var sf = new Snailfish(input[0]);
             sf.Reduce();
@@ -43,17 +44,14 @@ namespace Day18 {
         }
     }
 
-    public class Snailfish {
-        private Node root;
-
+    public class Snailfish : BinaryTree<int> {
         public Snailfish(string input) {
-            root = new Node();
-            ParseToTree(root, input);
+            ParseToTree(Root, input);
         }
 
-        private static Node ParseToTree(Node node, string input) {
+        private static BinaryNode<int> ParseToTree(BinaryNode<int> node, string input) {
             if (int.TryParse(input, out int n)) {
-                return new Node(n);
+                return new BinaryNode<int>(n);
             }
 
             input = input.Substring(1, input.Length - 2);
@@ -71,25 +69,22 @@ namespace Day18 {
             } while (brackets > 0);
 
             i = input.IndexOf(",", i, StringComparison.Ordinal);
-            node.Left = ParseToTree(new Node(), input.Substring(0, i));
-            node.Right = ParseToTree(new Node(), input.Substring(i + 1));
+            node.SetLeft(ParseToTree(new BinaryNode<int>(), input.Substring(0, i)));
+            node.SetRight(ParseToTree(new BinaryNode<int>(), input.Substring(i + 1)));
 
             return node;
         }
 
         public void Add(Snailfish other) {
-            root = new Node {
-                Left = root,
-                Right = other.root
-            };
+            BinaryNode<int> prevRoot = Root;
+            Root = new BinaryNode<int>();
+            Root.SetLeft(prevRoot);
+            Root.SetRight(other.Root);
         }
 
         public void Reduce() {
             while (true) {
-                if (root.Explode()) {
-                    continue;
-                }
-                if (root.Split()) {
+                if (Explode() || Split()) {
                     continue;
                 }
 
@@ -97,131 +92,74 @@ namespace Day18 {
             }
         }
 
+        private bool Explode() {
+            IEnumerable<BinaryNode<int>> enumerator = GetEnumerator()
+                .Where(n => !n.IsLeaf());
+            foreach (BinaryNode<int> node in enumerator) {
+                if (node.Depth() < 4) {
+                    continue;
+                }
+
+                //Console.WriteLine($"Exploding ({node.Value}): {node.Left}, {node.Right}");
+                BinaryNode<int> left = node.Left;
+                do {
+                    left = left.Predecessor();
+                } while (left != null && !left.IsLeaf());
+
+                if (left != null) {
+                    left.Value += node.Left.Value;
+                }
+
+                BinaryNode<int> right = node.Right;
+                do {
+                    right = right.Successor();
+                } while (right != null && !right.IsLeaf());
+
+                if (right != null) {
+                    right.Value += node.Right.Value;
+                }
+
+                node.RemoveLeft();
+                node.RemoveRight();
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool Split() {
+            IEnumerable<BinaryNode<int>> enumerator = GetEnumerator()
+                .Where(n => n.IsLeaf());
+            foreach (BinaryNode<int> node in enumerator) {
+                if (node.Value < 10) {
+                    continue;
+                }
+
+                int left = (int)Math.Floor(node.Value / 2.0);
+                int right = (int)Math.Ceiling(node.Value / 2.0);
+
+                // Console.WriteLine($"Splitting {node.Value} as {left}, {right}");
+                node.Value = default;
+                node.SetLeft(new BinaryNode<int>(left));
+                node.SetRight(new BinaryNode<int>(right));
+                return true;
+            }
+
+            return false;
+        }
+
         public int Magnitude() {
-            return root.Magnitude();
+            return Root.Aggregate(
+                (node) => node.Value,
+                (left, right) => left * 3 + right * 2
+            );
         }
 
         public override string ToString() {
-            return root.ToString();
-        }
-
-        public class Node {
-            public Node Left;
-            public Node Right;
-            private int value;
-
-            public Node(int v = -1) {
-                value = v;
-            }
-
-            private List<Node> InOrder() {
-                var list = new List<Node>();
-                if (Left != null) {
-                    list.AddRange(Left.InOrder());
-                }
-                if (value != -1) {
-                    list.Add(this);
-                }
-                if (Right != null) {
-                    list.AddRange(Right.InOrder());
-                }
-
-                return list;
-            }
-
-            public bool Explode() {
-                var stack = new Stack<(Node, int)>();
-                (Node, int) current = (this, 0);
-
-                Node toExplode = null;
-                while (current.Item1 != null || stack.Count > 0) {
-                    while (current.Item1 != null) {
-                        stack.Push(current);
-                        current = (current.Item1.Left, current.Item2 + 1);
-                    }
-
-                    current = stack.Pop();
-                    if (current.Item1.value == -1 && current.Item2 == 4) {
-                        toExplode = current.Item1;
-                        break;
-                    }
-
-                    current = (current.Item1.Right, current.Item2 + 1);
-                }
-
-                if (toExplode == null) {
-                    return false;
-                }
-
-                //Console.WriteLine($"Exploding ({toExplode.Value}): {toExplode.Left}, {toExplode.Right}");
-                List<Node> leaves = this.InOrder();
-                toExplode.value = 0;
-
-                int lIndex = leaves.IndexOf(toExplode.Left);
-                Debug.Assert(lIndex != -1);
-                if (lIndex - 1 >= 0) {
-                    leaves[lIndex - 1].value += toExplode.Left.value;
-                }
-
-                int rIndex = leaves.IndexOf(toExplode.Right);
-                Debug.Assert(rIndex != -1);
-                if (rIndex + 1 < leaves.Count) {
-                    leaves[rIndex + 1].value += toExplode.Right.value;
-                }
-
-                toExplode.Left = null;
-                toExplode.Right = null;
-                return true;
-            }
-
-            public bool Split() {
-                var stack = new Stack<Node>();
-                Node current = this;
-
-                Node toSplit = null;
-                while (current != null || stack.Count > 0) {
-                    while (current != null) {
-                        stack.Push(current);
-                        current = current.Left;
-                    }
-
-                    current = stack.Pop();
-                    if (current.value >= 10) {
-                        toSplit = current;
-                        break;
-                    }
-
-                    current = current.Right;
-                }
-
-                if (toSplit == null) {
-                    return false;
-                }
-
-                Debug.Assert(toSplit.value >= 10);
-                int left = (int)Math.Floor(toSplit.value / 2.0);
-                int right = (int)Math.Ceiling(toSplit.value / 2.0);
-
-                // Console.WriteLine($"Splitting {toSplit.Value} as {left}, {right}");
-                toSplit.value = -1;
-                toSplit.Left = new Node(left);
-                toSplit.Right = new Node(right);
-                return true;
-            }
-
-            public int Magnitude() {
-                if (Left == null && Right == null) {
-                    return value;
-                }
-
-                int lMag = Left?.Magnitude() ?? 0;
-                int rMag = Right?.Magnitude() ?? 0;
-                return lMag * 3 + rMag * 2;
-            }
-
-            public override string ToString() {
-                return value != -1 ? value.ToString() : $"[{Left},{Right}]";
-            }
+            return Root.Aggregate(
+                (node) => node.Value.ToString(),
+                (left, right) => $"[{left},{right}]"
+            );
         }
     }
 }

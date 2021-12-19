@@ -304,6 +304,34 @@ namespace UtilExtensions.Trees {
             return current;
         }
 
+        public BinaryNode<TR> Select<TR>(Func<T, TR> f) {
+            var result = new BinaryNode<TR>(f(Value));
+            if (Left != null) {
+                result.SetLeft(Left.Select(f));
+            }
+            if (Right != null) {
+                result.SetRight(Right.Select(f));
+            }
+
+            return result;
+        }
+
+        public T Aggregate(Func<BinaryNode<T>, T, T, T> agg) {
+            T lResult = Left != null ? Left.Aggregate(agg) : default;
+            T rResult = Right != null ? Right.Aggregate(agg) : default;
+            return agg(this, lResult, rResult);
+        }
+
+        public TR Aggregate<TR>(Func<BinaryNode<T>, TR> val, Func<TR, TR, TR> agg) {
+            if (IsLeaf()) {
+                return val(this);
+            }
+
+            TR lResult = Left != null ? Left.Aggregate(val, agg) : val(Left);
+            TR rResult = Right != null ? Right.Aggregate(val, agg) : val(Right);
+            return agg(lResult, rResult);
+        }
+
         public override string ToString() {
             var builder = new StringBuilder();
             ToString(builder, this, new StringBuilder(), true);
