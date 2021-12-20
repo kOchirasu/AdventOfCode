@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using NUnit.Framework;
 using static UtilExtensions.ArrayExtensions;
 
@@ -17,6 +18,17 @@ namespace UtilExtensions.Tests {
             // Out of bounds
             Assert.False(array.TryGet(-1, out int _));
             Assert.False(array.TryGet(5, out int _));
+        }
+
+        [Test]
+        public void GetOrDefaultTest() {
+            int[] array = {1, 2, 3, 4, 5};
+
+            Assert.AreEqual(3, array.GetOrDefault(2));
+
+            // Out of bounds
+            Assert.AreEqual(0, array.GetOrDefault(-1));
+            Assert.AreEqual(123, array.GetOrDefault(5, 123));
         }
 
         [Test]
@@ -58,6 +70,23 @@ namespace UtilExtensions.Tests {
             Assert.False(array.TryGet(0, -1, out int _));
             Assert.False(array.TryGet(2, 0, out int _));
             Assert.False(array.TryGet(0, 4, out int _));
+        }
+
+        [Test]
+        public void GetOrDefault2DTest() {
+            int[,] array = new int[2, 4];
+            array[0, 0] = 10;
+            array[1, 2] = 20;
+
+            Assert.AreEqual(10, array.GetOrDefault(0, 0));
+            Assert.AreEqual(20, array.GetOrDefault(1, 2));
+            Assert.AreEqual(0, array.GetOrDefault(1, 1));
+
+            // Out of bounds
+            Assert.AreEqual(0, array.GetOrDefault(-1, 0));
+            Assert.AreEqual(-123, array.GetOrDefault(0, -1, -123));
+            Assert.AreEqual(123, array.GetOrDefault(2, 0, 123));
+            Assert.AreEqual(0, array.GetOrDefault(0, 4));
         }
 
         [Test]

@@ -52,6 +52,14 @@ namespace UtilExtensions {
             return true;
         }
 
+        public static T GetOrDefault<T>(this T[] arr, int n, T @default = default) {
+            if (n < 0 || n >= arr.Length) {
+                return @default;
+            }
+
+            return arr[n];
+        }
+
         public static T[] Shift<T>(this T[] arr, int n, T extend = default) {
             n %= arr.Length;
             (int src, int dst) shift = default;
@@ -108,6 +116,14 @@ namespace UtilExtensions {
 
             value = arr[row, col];
             return true;
+        }
+
+        public static T GetOrDefault<T>(this T[,] arr, int row, int col, T @default = default) {
+            if (row < 0 || col < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1)) {
+                return @default;
+            }
+
+            return arr[row, col];
         }
 
         public static T[] GetColumn<T>(this T[,] arr, int col) {
