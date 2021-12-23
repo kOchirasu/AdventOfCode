@@ -43,26 +43,20 @@ namespace Day23 {
             int[] hallway = new int[11];
             Array.Fill(hallway, GameState.EMPTY);
 
-            int bestScore = int.MaxValue;
-            var queue = new Queue<GameState>();
-            queue.Enqueue(new GameState(hallway, rooms, 0));
-
-            while (queue.TryDequeue(out GameState next)) {
-                next.Simplify();
-                if (next.Score > bestScore) {
-                    continue;
-                }
+            var queue = new PriorityQueue<GameState, int>();
+            queue.Enqueue(new GameState(hallway, rooms, 0), 0);
+            while (queue.TryDequeue(out GameState next, out int _)) {
                 if (next.Done()) {
-                    bestScore = Math.Min(next.Score, bestScore);
-                    continue;
+                    return next.Score;
                 }
 
-                foreach (GameState branch in next.MoveToHallway()) {
-                    queue.Enqueue(branch);
+                foreach (GameState branch in next.RoomToHallway()) {
+                    branch.Simplify();
+                    queue.Enqueue(branch, branch.Score);
                 }
             }
 
-            return bestScore;
+            return -1;
         }
 
         public class GameState {
@@ -88,13 +82,15 @@ namespace Day23 {
                 while (HallwayToRoom() || RoomToRoom()) { }
             }
 
-            public IEnumerable<GameState> MoveToHallway() {
+            public IEnumerable<GameState> RoomToHallway() {
                 for (int i = 3; i >= 0; i--) {
                     // Nothing to move out of this room.
-                    if (rooms.GetRow(i).All(a => a == i || a == EMPTY)) {
+                    if (EmptyIndex(i) != int.MaxValue) {
                         continue;
                     }
 
+                    int type = PeekRoom(i, out int index);
+                    int steps = RemoveFromRoom(i, index);
                     foreach (int hIndex in HallwayIndex) {
                         if (hallway[hIndex] != EMPTY) {
                             continue;
@@ -103,34 +99,35 @@ namespace Day23 {
                             continue;
                         }
 
-                        int steps = RemoveFromRoom(i, out int removed);
-                        hallway[hIndex] = removed;
-                        int cost = (steps + Math.Abs(hIndex - RoomIndex[i])) * (int)Math.Pow(10, removed);
+                        ;
+                        hallway[hIndex] = type;
+                        int cost = (steps + Math.Abs(hIndex - RoomIndex[i])) * (int)Math.Pow(10, type);
                         yield return new GameState(hallway, rooms, Score + cost) { prev = this };
                         // restore mutated state
-                        rooms[i, rooms.Columns() - steps] = hallway[hIndex];
                         hallway[hIndex] = EMPTY;
                     }
+                    rooms[i, rooms.Columns() - steps] = type;
                 }
             }
 
             private bool HallwayToRoom() {
                 bool mutated = false;
                 for (int i = 3; i >= 0; i--) {
-                    int space = RoomSpace(i);
-                    if (space <= 0) continue;
+                    int space = rooms.Columns() - EmptyIndex(i);
 
-                    foreach (int hIndex in HallwayIndex) {
+                    for (int j = 0; j < HallwayIndex.Length && space > 0; j++) {
+                        int hIndex = HallwayIndex[j];
                         int type = hallway[hIndex];
                         if (type == EMPTY || type != i) continue;
 
                         if (CanMoveHallway(hIndex, RoomIndex[type])) {
                             hallway[hIndex] = EMPTY;
-                            int steps = AddToRoom(i);
-                            Score += (Math.Abs(hIndex - RoomIndex[type]) + steps) * (int)Math.Pow(10, type);
+                            int steps = Math.Abs(hIndex - RoomIndex[type]); // hallway
+                            steps += AddToRoom(i);
+                            Score += steps * (int)Math.Pow(10, type);
                             mutated = true;
 
-                            if (--space <= 0) break;
+                            space--;
                         }
                     }
                 }
@@ -141,17 +138,18 @@ namespace Day23 {
             private bool RoomToRoom() {
                 bool mutated = false;
                 for (int i = 3; i >= 0; i--) {
-                    int space = RoomSpace(i);
-                    if (space <= 0) continue;
+                    int space = rooms.Columns() - EmptyIndex(i);
 
                     for (int j = 0; j < 4 && space > 0; j++) {
                         if (i == j) continue; // move to self
 
-                        if (PeekRoom(j) == i && CanMoveHallway(RoomIndex[j], RoomIndex[i])) {
-                            int steps = RemoveFromRoom(j, out int removed) + AddToRoom(i);
+                        int type = PeekRoom(j, out int index);
+                        if (type == i && CanMoveHallway(RoomIndex[j], RoomIndex[i])) {
+                            int steps = Math.Abs(RoomIndex[j] - RoomIndex[i]); // hallway
+                            steps += RemoveFromRoom(j, index) + AddToRoom(i);
 
-                            Debug.Assert(removed == i);
-                            Score += (Math.Abs(RoomIndex[j] - RoomIndex[i]) + steps) * (int)Math.Pow(10, i);
+                            Debug.Assert(type == i);
+                            Score += steps * (int)Math.Pow(10, i);
 
                             mutated = true;
                             space--;
@@ -163,44 +161,43 @@ namespace Day23 {
                 return mutated;
             }
 
-            private int RoomSpace(int roomNumber) {
-                int space = rooms.Columns();
+            private int EmptyIndex(int roomNumber) {
+                int index = 0;
                 for (int i = 0; i < rooms.Columns(); i++) {
                     if (rooms[roomNumber, i] == roomNumber) {
-                        space--;
+                        index++;
+                        continue;
                     }
-                    // Assume all remaining are empty
                     if (rooms[roomNumber, i] == EMPTY) {
-                        break;
+                        continue;
                     }
                     if (rooms[roomNumber, i] != roomNumber) {
-                        return 0;
+                        return int.MaxValue;
                     }
                 }
 
-                return space;
+                return index;
             }
 
-            private int PeekRoom(int roomNumber) {
+            private int PeekRoom(int roomNumber, out int index) {
                 for (int i = rooms.Columns() - 1; i >= 0; i--) {
                     if (rooms[roomNumber, i] == EMPTY) continue;
 
+                    index = i;
                     return rooms[roomNumber, i];
                 }
 
+                index = -1;
                 return EMPTY;
             }
 
-            private int RemoveFromRoom(int roomNumber, out int type) {
-                for (int i = rooms.Columns() - 1; i >= 0; i--) {
-                    if (rooms[roomNumber, i] == EMPTY) continue;
-
-                    type = rooms[roomNumber, i];
-                    rooms[roomNumber, i] = EMPTY;
-                    return rooms.Columns() - i;
+            private int RemoveFromRoom(int roomNumber, int index) {
+                if (EmptyIndex(roomNumber) != int.MaxValue) {
+                    return -1;
                 }
 
-                throw new InvalidOperationException("Cannot remove from empty room");
+                rooms[roomNumber, index] = EMPTY;
+                return rooms.Columns() - index;
             }
 
             private int AddToRoom(int roomNumber) {
