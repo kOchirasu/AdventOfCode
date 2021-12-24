@@ -1,0 +1,166 @@
+﻿# z = (((w1 + 5) * 26  + (w2 + 14)) * 26 + (w3 + 15)) * 26 + (w4 + 16)
+inp w
+add w 5
+set z w
+inp w
+add w 14
+mul z 26
+add z w
+inp w
+add w 15
+mul z 26
+add z w
+inp w
+add w 16
+mul z 26
+add z w
+print z
+# Reduce (w5 == w4)
+inp w
+set x z
+# x[w5] = w4 + 16
+mod x 26
+# z = ((w1 + 5) * 26  + (w2 + 14)) * 26 + (w3 + 15)
+div z 26
+# x[w5] = w4
+add x -16
+# x = (w5 != w4)
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+add w 8
+set y w
+add y 8
+mul y x
+add z y
+print z
+# Reduce (w6 == w3 + 4)
+inp w
+set x z
+# x[w6] = w3 + 15
+mod x 26
+# z = (w1 + 5) * 26  + (w2 + 14)
+div z 26
+add x -11
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+set y w
+add y 9
+mul y x
+add z y
+print z
+# Reduce (w7 == w2 + 8)
+inp w
+set x z
+# x[w7] = w2 + 14
+mod x 26
+# z = w1 + 5
+div z 26
+add x -6
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+set y w
+add y 2
+mul y x
+add z y
+print z
+# z = ((w1 + 5) * 26  + (w8 + 13)) * 26 + (w9 + 16)
+inp w
+add w 13
+mul z 26
+add z w
+inp w
+add w 16
+mul z 26
+add z w
+print z
+# Reduce (w10 == w9 + 6)
+inp w
+set x z
+# x[w10] = w9 + 16
+mod x 26
+# z = (w1 + 5) * 26  + (w8 + 13)
+div z 26
+add x -10
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+set y w
+add y 6
+mul y x
+add z y
+print z
+# Reduce (w11 == w8 + 5)
+inp w
+set x z
+# x[w11] = w8 + 13
+mod x 26
+# z = w1 + 5
+div z 26
+add x -8
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+set y w
+add y 6
+mul y x
+add z y
+print z
+# Reduce (w12 == w1 - 6)
+inp w
+set x z
+# w1 + 5
+mod x 26
+# w1 + 5
+div z 26
+add x -11
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+set y w
+add y 9
+mul y x
+add z y
+print z
+# Input: z = w13 + 11
+inp w
+add w 11
+mul z 26
+add z w
+print z
+# Reduce (w14 == w13 - 4)
+inp w
+set x z
+mod x 26
+div z 26
+add x -15
+eql x w
+eql x 0
+set y 25
+mul y x
+add y 1
+mul z y
+set y w
+add y 5
+mul y x
+add z y
