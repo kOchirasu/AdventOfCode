@@ -1,7 +1,7 @@
 ﻿# z = (((w1 + 5) * 26  + (w2 + 14)) * 26 + (w3 + 15)) * 26 + (w4 + 16)
 inp w
 add w 5
-set z w
+add z w
 inp w
 add w 14
 mul z 26
