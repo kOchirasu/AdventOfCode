@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\UtilExtensions\UtilExtensions.csproj" />
+      <ProjectReference Include="..\..\UtilExtensions\UtilExtensions.csproj" />
     </ItemGroup>
 
 </Project>
