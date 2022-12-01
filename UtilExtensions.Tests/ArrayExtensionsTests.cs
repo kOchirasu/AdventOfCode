@@ -37,10 +37,14 @@ public class ArrayExtensionsTests {
 
         Assert.AreEqual(array, array.Shift(0));
         Assert.AreEqual(new []{4, 5, 0, 0, 0}, array.Shift(-3));
+        Assert.AreEqual(array.Shift(-3), array.Shift(-1).Shift(-2));
         Assert.AreEqual(new []{0, 0, 0, 1, 2}, array.Shift(3));
+        Assert.AreEqual(array.Shift(3), array.Shift(1).Shift(2));
         Assert.AreEqual(array, array.Shift(0, -1));
         Assert.AreEqual(new []{4, 5, 7, 7, 7}, array.Shift(-3, 7));
+        Assert.AreEqual(array.Shift(-3, 7), array.Shift(-1, 7).Shift(-2, 7));
         Assert.AreEqual(new []{7, 7, 7, 1, 2}, array.Shift(3, 7));
+        Assert.AreEqual(array.Shift(3, 7), array.Shift(1, 7).Shift(2, 7));
     }
 
     [Test]
@@ -49,7 +53,9 @@ public class ArrayExtensionsTests {
 
         Assert.AreEqual(array, array.CircularShift(0));
         Assert.AreEqual(new []{4, 5, 1, 2, 3}, array.CircularShift(-3));
+        Assert.AreEqual(array.CircularShift(-3), array.CircularShift(-1).CircularShift(-2));
         Assert.AreEqual(new []{3, 4, 5, 1, 2}, array.CircularShift(3));
+        Assert.AreEqual(array.CircularShift(3), array.CircularShift(1).CircularShift(2));
     }
 
     [Test]
