@@ -1,22 +1,22 @@
 ﻿using System.Collections.Generic;
 
-namespace UtilExtensions {
-    public class DefaultDictionary<TK, TV> : Dictionary<TK, TV> {
-        private readonly TV @default;
+namespace UtilExtensions;
 
-        public DefaultDictionary(TV @default = default) {
-            this.@default = @default;
-        }
+public class DefaultDictionary<TK, TV> : Dictionary<TK, TV> {
+    private readonly TV @default;
 
-        public new TV this[TK key] {
-            get {
-                if (!ContainsKey(key)) {
-                    Add(key, @default);
-                }
+    public DefaultDictionary(TV @default = default) {
+        this.@default = @default;
+    }
 
-                return base[key];
+    public new TV this[TK key] {
+        get {
+            if (!ContainsKey(key)) {
+                Add(key, @default);
             }
-            set => base[key] = value;
+
+            return base[key];
         }
+        set => base[key] = value;
     }
 }
