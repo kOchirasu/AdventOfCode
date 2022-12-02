@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Numerics;
 using NUnit.Framework;
+using QuikGraph;
+using QuikGraph.Algorithms;
 using static UtilExtensions.ArrayExtensions;
 
 namespace UtilExtensions.Tests;
@@ -316,5 +320,28 @@ public class ArrayExtensionsTests {
         Assert.Throws<IndexOutOfRangeException>(() => jagged.UnJagged());
         Assert.AreEqual(2, jagged.UnJagged(true).Rows());
         Assert.AreEqual(4, jagged.UnJagged(true).Columns());
+    }
+
+    [Test]
+    public void GraphTest() {
+        char[,] array = {
+            {'a', 'b', 'c'},
+            {'d', 'e', 'f'},
+            {'g', 'h', 'i'},
+        };
+        BidirectionalGraph<(int, int), TaggedEdge<(int, int), (char, char)>> graph = array.AsGraph();
+        // foreach ((int, int) vertex in graph.Vertices) {
+        //     Console.WriteLine($"Vertex: {vertex}");
+        //     foreach(TaggedEdge<(int, int), char> edge in graph.InEdges(vertex)) {
+        //         Console.WriteLine($"> {edge}");
+        //     }
+        // }
+
+        TryFunc<(int, int), IEnumerable<TaggedEdge<(int, int), (char, char)>>> tryGetPaths = graph.ShortestPathsDijkstra(edge => 1, (0, 0));
+        if (tryGetPaths((2, 2), out IEnumerable<TaggedEdge<(int, int), (char, char)>> results)) {
+            foreach (TaggedEdge<(int, int), (char, char)> result in results) {
+                Console.WriteLine(result);
+            }
+        }
     }
 }

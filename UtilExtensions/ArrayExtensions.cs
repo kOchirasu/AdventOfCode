@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using QuikGraph;
 
 namespace UtilExtensions;
 
@@ -380,6 +381,28 @@ public static class ArrayExtensions {
         }
 
         return result;
+    }
+
+    public static BidirectionalGraph<(int R, int C), TaggedEdge<(int, int), (T, T)>> AsGraph<T>(this T[,] arr) {
+        var graph = new BidirectionalGraph<(int, int), TaggedEdge<(int, int), (T, T)>>();
+
+        int rows = arr.Rows();
+        int cols = arr.Columns();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                graph.AddVertex((i, j));
+            }
+        }
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                foreach ((int r, int c) in arr.Adjacent(i, j, Directions.Cardinal)) {
+                    graph.AddEdge(new TaggedEdge<(int, int), (T, T)>((i, j), (r, c), (arr[i, j], arr[r, c])));
+                }
+            }
+        }
+
+        return graph;
     }
 
     public static string PrettyString<T>(this IEnumerable<T> arr, string delimiter = " ") {
