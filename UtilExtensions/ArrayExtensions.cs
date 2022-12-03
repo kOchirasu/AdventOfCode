@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using QuikGraph;
@@ -44,9 +45,9 @@ public static class ArrayExtensions {
     public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
     public static int Columns<T>(this T[,] arr) => arr.GetLength(1);
 
-    public static bool TryGet<T>(this T[] arr, int n, out T value) {
+    public static bool TryGet<T>(this T[] arr, int n, [MaybeNullWhen(false)] out T value) {
         if (n < 0 || n >= arr.Length) {
-            value = default;
+            value = default(T);
             return false;
         }
 
@@ -54,7 +55,7 @@ public static class ArrayExtensions {
         return true;
     }
 
-    public static T GetOrDefault<T>(this T[] arr, int n, T @default = default) {
+    public static T GetOrDefault<T>(this T[] arr, int n, T @default = default(T)) {
         if (n < 0 || n >= arr.Length) {
             return @default;
         }
@@ -76,7 +77,7 @@ public static class ArrayExtensions {
         return result;
     }
 
-    public static T[] Shift<T>(this T[] arr, int n, T extend = default) {
+    public static T[] Shift<T>(this T[] arr, int n, T extend = default(T)) {
         n %= arr.Length;
         (int src, int dst) shift = default;
         int fill = 0;
@@ -124,7 +125,7 @@ public static class ArrayExtensions {
         return result;
     }
 
-    public static bool TryGet<T>(this T[,] arr, int row, int col, out T value) {
+    public static bool TryGet<T>(this T[,] arr, int row, int col, [MaybeNullWhen(false)] out T value) {
         if (row < 0 || col < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1)) {
             value = default;
             return false;
@@ -134,7 +135,7 @@ public static class ArrayExtensions {
         return true;
     }
 
-    public static T GetOrDefault<T>(this T[,] arr, int row, int col, T @default = default) {
+    public static T GetOrDefault<T>(this T[,] arr, int row, int col, T @default = default(T)) {
         if (row < 0 || col < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1)) {
             return @default;
         }
@@ -304,7 +305,7 @@ public static class ArrayExtensions {
                 c = (c + cols) % cols;
             }
 
-            if (arr.TryGet(r, c, out T _)) {
+            if (arr.TryGet(r, c, out T? _)) {
                 yield return (r, c);
             }
         }
@@ -403,10 +404,6 @@ public static class ArrayExtensions {
         }
 
         return graph;
-    }
-
-    public static string PrettyString<T>(this IEnumerable<T> arr, string delimiter = " ") {
-        return string.Join(delimiter, arr);
     }
 
     public static string PrettyString<T>(this T[,] arr, string delimiter = " ") {

@@ -6,7 +6,7 @@ using System.Text;
 namespace UtilExtensions;
 
 public static class DictionaryExtensions {
-    public static TV GetOrCreate<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV @default = default) {
+    public static TV GetOrCreate<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV @default = default(TV)) {
         if (!dict.TryGetValue(key, out TV value)) {
             value = @default;
             dict[key] = value;

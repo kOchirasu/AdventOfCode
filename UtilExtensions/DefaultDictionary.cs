@@ -5,7 +5,7 @@ namespace UtilExtensions;
 public class DefaultDictionary<TK, TV> : Dictionary<TK, TV> {
     private readonly TV @default;
 
-    public DefaultDictionary(TV @default = default) {
+    public DefaultDictionary(TV @default = default(TV)) {
         this.@default = @default;
     }
 

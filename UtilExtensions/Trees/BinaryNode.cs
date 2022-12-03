@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UtilExtensions.Trees; 
+namespace UtilExtensions.Trees;
 
 public class BinaryNode<T> {
     public T Value;
-    public BinaryNode<T> Left { get; private set; }
-    public BinaryNode<T> Right { get; private set; }
-    public BinaryNode<T> Parent { get; private set; }
+    public BinaryNode<T>? Left { get; private set; }
+    public BinaryNode<T>? Right { get; private set; }
+    public BinaryNode<T>? Parent { get; private set; }
 
-    public BinaryNode(T value = default) {
+    public BinaryNode(T value = default(T)) {
         Value = value;
     }
 
@@ -20,7 +20,9 @@ public class BinaryNode<T> {
     }
 
     public void RemoveLeft() {
-        Left.Parent = null;
+        if (Left != null) {
+            Left.Parent = null;
+        }
         Left = null;
     }
 
@@ -30,7 +32,9 @@ public class BinaryNode<T> {
     }
 
     public void RemoveRight() {
-        Right.Parent = null;
+        if (Right != null) {
+            Right.Parent = null;
+        }
         Right = null;
     }
 
@@ -58,14 +62,14 @@ public class BinaryNode<T> {
         return Left == null && Right == null;
     }
 
-    public BinaryNode<T> Predecessor(TreeTraversal traversal = TreeTraversal.Inorder) {
+    public BinaryNode<T>? Predecessor(TreeTraversal traversal = TreeTraversal.Inorder) {
         switch (traversal) {
             case TreeTraversal.Inorder: {
                 if (Left != null) {
                     return Left.Max();
                 }
 
-                BinaryNode<T> parent = Parent;
+                BinaryNode<T>? parent = Parent;
                 BinaryNode<T> current = this;
                 while (parent != null && parent.Right != current) {
                     current = parent;
@@ -100,8 +104,8 @@ public class BinaryNode<T> {
                     return Left;
                 }
 
-                BinaryNode<T> parent = Parent;
-                BinaryNode<T> current = this;
+                BinaryNode<T>? parent = Parent;
+                BinaryNode<T>? current = this;
                 while (parent != null && (parent.Left == null || parent.Left == current)) {
                     current = Parent;
                     parent = parent.Parent;
@@ -114,7 +118,7 @@ public class BinaryNode<T> {
                     return null;
                 }
 
-                BinaryNode<T> prev = null;
+                BinaryNode<T>? prev = null;
                 foreach (BinaryNode<T> node in Root().GetEnumerator(TreeTraversal.LevelOrder)) {
                     if (node == this) {
                         return prev;
@@ -130,14 +134,14 @@ public class BinaryNode<T> {
         }
     }
 
-    public BinaryNode<T> Successor(TreeTraversal traversal = TreeTraversal.Inorder) {
+    public BinaryNode<T>? Successor(TreeTraversal traversal = TreeTraversal.Inorder) {
         switch (traversal) {
             case TreeTraversal.Inorder: {
                 if (Right != null) {
                     return Right.Min();
                 }
 
-                BinaryNode<T> parent = Parent;
+                BinaryNode<T>? parent = Parent;
                 BinaryNode<T> current = this;
                 while (parent != null && parent.Left != current) {
                     current = parent;
@@ -159,7 +163,7 @@ public class BinaryNode<T> {
                     return null;
                 }
 
-                BinaryNode<T> parent = Parent;
+                BinaryNode<T>? parent = Parent;
                 BinaryNode<T> current = this;
                 while (parent != null && parent.Right == current) {
                     current = Parent;
@@ -214,7 +218,7 @@ public class BinaryNode<T> {
         switch (traversal) {
             case TreeTraversal.Inorder: {
                 var stack = new Stack<BinaryNode<T>>();
-                BinaryNode<T> current = this;
+                BinaryNode<T>? current = this;
                 while (current != null || stack.Count > 0) {
                     while (current != null) {
                         stack.Push(current);
@@ -247,8 +251,8 @@ public class BinaryNode<T> {
             }
             case TreeTraversal.Postorder: {
                 var stack = new Stack<BinaryNode<T>>();
-                BinaryNode<T> current = this;
-                BinaryNode<T> prev = null;
+                BinaryNode<T>? current = this;
+                BinaryNode<T>? prev = null;
                 while (stack.Count > 0 || current != null) {
                     if (current != null) {
                         stack.Push(current);
@@ -317,13 +321,13 @@ public class BinaryNode<T> {
         return result;
     }
 
-    public T Aggregate(Func<BinaryNode<T>, T, T, T> agg) {
-        T lResult = Left != null ? Left.Aggregate(agg) : default;
-        T rResult = Right != null ? Right.Aggregate(agg) : default;
+    public T Aggregate(Func<BinaryNode<T>, T?, T?, T> agg) {
+        T? lResult = Left != null ? Left.Aggregate(agg) : default;
+        T? rResult = Right != null ? Right.Aggregate(agg) : default;
         return agg(this, lResult, rResult);
     }
 
-    public TR Aggregate<TR>(Func<BinaryNode<T>, TR> val, Func<TR, TR, TR> agg) {
+    public TR Aggregate<TR>(Func<BinaryNode<T>?, TR> val, Func<TR, TR, TR> agg) {
         if (IsLeaf()) {
             return val(this);
         }
@@ -339,10 +343,10 @@ public class BinaryNode<T> {
         return builder.ToString();
     }
 
-    private static void ToString(StringBuilder builder, BinaryNode<T> node, StringBuilder indent, bool last) {
+    private static void ToString(StringBuilder builder, BinaryNode<T>? node, StringBuilder indent, bool last) {
         builder.Append(indent);
         builder.Append("+->");
-        builder.AppendLine(node?.Value.ToString() ?? "NULL");
+        builder.AppendLine(node?.Value?.ToString() ?? "NULL");
         if (node == null) {
             return;
         }

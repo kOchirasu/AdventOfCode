@@ -106,8 +106,8 @@ public class ArrayExtensionsTests {
         array.SetColumn(0, new []{1, 2});
         Assert.AreEqual(new []{1, 2}, array.GetColumn(0));
         Assert.AreEqual(new []{0, 0}, array.GetColumn(1));
-        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(-1, null));
-        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(4, null));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(-1, Array.Empty<int>()));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(4, Array.Empty<int>()));
         Assert.Throws<ArgumentException>(() => array.SetColumn(0, Array.Empty<int>()));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetColumn(-1));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetColumn(4));
@@ -120,8 +120,8 @@ public class ArrayExtensionsTests {
         array.SetRow(0, new []{1, 2, 3, 4});
         Assert.AreEqual(new []{1, 2, 3, 4}, array.GetRow(0));
         Assert.AreEqual(new []{0, 0, 0, 0}, array.GetRow(1));
-        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(-1, null));
-        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(2, null));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(-1, Array.Empty<int>()));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(2, Array.Empty<int>()));
         Assert.Throws<ArgumentException>(() => array.SetRow(0, Array.Empty<int>()));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(-1));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(2));
@@ -280,8 +280,8 @@ public class ArrayExtensionsTests {
             {6, 0, 6},
         };
         Assert.AreEqual(result, array1.Compose(array2, (a, b) => a * b));
-        Assert.Throws<ArgumentException>(() => array1.Compose(new int[2, 2], (a, b) => a));
-        Assert.Throws<ArgumentException>(() => array1.Compose(new int[3, 3], (a, b) => b));
+        Assert.Throws<ArgumentException>(() => array1.Compose(new int[2, 2], (a, _) => a));
+        Assert.Throws<ArgumentException>(() => array1.Compose(new int[3, 3], (_, b) => b));
     }
 
     [Test]

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UtilExtensions.Trees; 
+namespace UtilExtensions.Trees;
 
 public class BinaryTree<T> {
     public BinaryNode<T> Root { get; protected set; }
 
-    public BinaryTree(T rootValue = default) {
+    public BinaryTree(T rootValue = default(T)) {
         Root = new BinaryNode<T>(rootValue);
     }
 
@@ -26,11 +26,11 @@ public class BinaryTree<T> {
         return new BinaryTree<TR>(Root.Select(f));
     }
 
-    public T Aggregate(Func<BinaryNode<T>, T, T, T> agg) {
+    public T Aggregate(Func<BinaryNode<T>, T?, T?, T> agg) {
         return Root.Aggregate(agg);
     }
 
-    public TR Aggregate<TR>(Func<BinaryNode<T>, TR> val, Func<TR, TR, TR> agg) {
+    public TR Aggregate<TR>(Func<BinaryNode<T>?, TR> val, Func<TR, TR, TR> agg) {
         return Root.Aggregate(val, agg);
     }
 
