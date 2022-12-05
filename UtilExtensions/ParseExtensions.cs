@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 
 namespace UtilExtensions;
 
 public static class ParseExtensions {
-    public static string[] Groups(this string str) {
+    public static string[] Groups(this string str, bool trim = false) {
         string[] result = str.Replace("\r", "")
             .Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
-        for (int i = 0; i < result.Length; i++) {
-            result[i] = result[i].Trim();
+        if (trim) {
+            for (int i = 0; i < result.Length; i++) {
+                result[i] = result[i].Trim();
+            }
         }
 
         return result;
@@ -32,12 +36,17 @@ public static class ParseExtensions {
         }
     }
 
-    public static string[] StringList(this string str) {
-        return str.Replace("\r", "")
-            .Trim()
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.Trim())
-            .ToArray();
+    public static string[] StringList(this string str, bool trim = false) {
+        string[] result = str.Replace("\r", "")
+            .TrimEnd()
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        return trim ? result.Select(line => line.Trim()).ToArray() : result;
+    }
+
+    public static IEnumerable<string> SplitEveryN(this string str, int n, int pad = 1, int offset = 0) {
+        for (int i = offset; i < str.Length; i += n + pad) {
+            yield return str.Substring(i, Math.Min(n, str.Length - i));
+        }
     }
 
     public static int[] IntList(this string str) {
@@ -71,5 +80,15 @@ public static class ParseExtensions {
 
     public static int[,] DigitMatrix(this string[] lines) {
         return lines.CharMatrix().Select(c => c - '0');
+    }
+
+    public static T DeepCopy<T>(this T instance) {
+        var formatter = new BinaryFormatter();
+
+        using var stream = new MemoryStream();
+        formatter.Serialize(stream, instance!);
+        stream.Position = 0;
+
+        return (T) formatter.Deserialize(stream);
     }
 }

@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 
 namespace UtilExtensions.Tests;
 
@@ -64,6 +67,18 @@ public class ParseExtensionsTest {
             "Group2A",
         };
         Assert.AreEqual(list, blob.StringList());
+    }
+
+    [Test]
+    [TestCase("[B] [W] [N] [P] [D] [V] [G]", 3, 1, 0, new []{"[B]", "[W]", "[N]", "[P]", "[D]", "[V]", "[G]"})]
+    [TestCase("[R]     [M]             [L]", 3, 1, 0, new []{"[R]", "   ", "[M]", "   ", "   ", "   ", "[L]"})]
+    [TestCase("[R]     [M]             [L]", 1, 3, 1, new []{"R", " ", "M", " ", " ", " ", "L"})]
+    [TestCase("[R]   [M]         [L]", 3, 0, 0, new []{"[R]", "   ", "[M]", "   ", "   ", "   ", "[L]"})]
+    [TestCase("12345|67890|777", 5, 1, 0, new []{"12345", "67890", "777"})]
+    public void SplitEveryTest(string input, int n, int pad, int offset, string[] expected) {
+        string[] result = input.SplitEveryN(n, pad, offset).ToArray();
+        Console.WriteLine(string.Join(",", result));
+        Assert.AreEqual(expected, result);
     }
 
     [Test]
