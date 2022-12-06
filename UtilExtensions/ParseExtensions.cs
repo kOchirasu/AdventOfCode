@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 
 namespace UtilExtensions;
 
@@ -49,6 +50,11 @@ public static class ParseExtensions {
         }
     }
 
+    public static string[] Extract(this string str, [RegexPattern] string pattern) {
+        Match match = Regex.Match(str, pattern);
+        return match.Groups.SelectMany(group => group.Captures.Select(capture => capture.Value)).Skip(1).ToArray();
+    }
+
     public static int[] IntList(this string str) {
         return str.StringList().Select(int.Parse).ToArray();
     }
@@ -57,18 +63,18 @@ public static class ParseExtensions {
         return str.StringList().Select(int.Parse).ToArray();
     }
 
-    public static string[,] StringMatrix(this string str, string pattern = " +") {
+    public static string[,] StringMatrix(this string str, [RegexPattern] string pattern = " +") {
         return str.StringList()
             .Select(line => Regex.Split(line, pattern).ToArray())
             .ToArray()
             .UnJagged();
     }
 
-    public static int[,] IntMatrix(this string str, string pattern = " +") {
+    public static int[,] IntMatrix(this string str, [RegexPattern] string pattern = " +") {
         return StringMatrix(str, pattern).Select(int.Parse);
     }
 
-    public static long[,] LongMatrix(this string str, string pattern = " +") {
+    public static long[,] LongMatrix(this string str, [RegexPattern] string pattern = " +") {
         return StringMatrix(str, pattern).Select(long.Parse);
     }
 

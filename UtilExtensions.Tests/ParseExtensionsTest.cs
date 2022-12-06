@@ -82,6 +82,15 @@ public class ParseExtensionsTest {
     }
 
     [Test]
+    [TestCase("[B] [W] [N] [P] [D] [V] [G]", @"\[(.)\] \[(.)\] \[(.)\] \[(.)\] \[(.)\] \[(.)\] \[(.)\]", new []{"B", "W", "N", "P", "D", "V", "G"})]
+    [TestCase("[R]     [M]             [L]", @"(.{3}) (.{3}) (.{3}) (.{3}) (.{3}) (.{3}) (.{3})", new []{"[R]", "   ", "[M]", "   ", "   ", "   ", "[L]"})]
+    [TestCase("[R]     [M]             [L]", @"(?:.(.). ?)+", new []{"R", " ", "M", " ", " ", " ", "L"})]
+    [TestCase("take 25 from 123 to 789", @"take (\d+) from (\d+) to (\d+)", new []{"25", "123", "789"})]
+    public void ExtractTest(string input, string pattern, string[] expected) {
+        Assert.AreEqual(expected, input.Extract(pattern));
+    }
+
+    [Test]
     public void NumListTest() {
         const string blob = """
         1
