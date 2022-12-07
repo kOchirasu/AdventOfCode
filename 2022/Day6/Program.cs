@@ -1,4 +1,6 @@
-﻿namespace Day6;
+﻿using UtilExtensions;
+
+namespace Day6;
 
 // https://adventofcode.com/
 public static class Program {
@@ -12,21 +14,23 @@ public static class Program {
     }
 
     private static int Part1(string text) {
-        for (int i = 0; i < text.Length; i++) {
-            var set = new HashSet<char>(text.Substring(i, 4));
-            if (set.Count == 4) {
+        int i = 0;
+        foreach (char[] window in text.Window(4)) {
+            if (window.Length == window.ToHashSet().Count) {
                 return i + 4;
             }
+            i++;
         }
         return -1;
     }
 
     private static int Part2(string text) {
-        for (int i = 0; i < text.Length; i++) {
-            var set = new HashSet<char>(text.Substring(i, 14));
-            if (set.Count == 14) {
+        int i = 0;
+        foreach (char[] window in text.Window(14)) {
+            if (window.Length == window.ToHashSet().Count) {
                 return i + 14;
             }
+            i++;
         }
         return -1;
     }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 using QuikGraph;
 
 namespace UtilExtensions;
@@ -13,6 +11,15 @@ public static class EnumerableExtensions {
             if(parse(element, out TResult value )) {
                 yield return value;
             }
+        }
+    }
+
+    public static IEnumerable<T[]> Window<T>(this IEnumerable<T> enumerable, int size, int step = 1) {
+        T[] arr = enumerable.ToArray();
+        for (int i = 0; i < arr.Length - size; i += step) {
+            var result = new T[size];
+            Array.Copy(arr, i, result, 0, size);
+            yield return result;
         }
     }
 
