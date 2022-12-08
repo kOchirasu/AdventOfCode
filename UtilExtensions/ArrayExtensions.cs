@@ -435,6 +435,12 @@ public static class ArrayExtensions {
         return builder.ToString();
     }
 
+    public static IEnumerable<T> ToEnumerable<T>(this T[,] arr) {
+        foreach (T item in arr) {
+            yield return item;
+        }
+    }
+
     public static int Sum(this int[,] items) {
         int rows = items.RowCount();
         int cols = items.ColumnCount();
@@ -446,5 +452,17 @@ public static class ArrayExtensions {
         }
 
         return sum;
+    }
+
+    public static IEnumerable<T> Where<T>(this T[,] arr, Func<T, bool> f) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (f(arr[i, j])) {
+                    yield return arr[i, j];
+                }
+            }
+        }
     }
 }

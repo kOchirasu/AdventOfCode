@@ -27,6 +27,44 @@ public static class Program {
         return count;
     }
 
+    private static int Part1V2(int[,] matrix) {
+        bool[,] visible = matrix.Select(_ => false);
+        for (int r = 0; r < matrix.RowCount(); r++) {
+            int colMax = -1;
+            for (int c = 0; c < matrix.ColumnCount(); c++) {
+                if (matrix[r, c] > colMax) {
+                    visible[r, c] = true;
+                }
+                colMax = Math.Max(colMax, matrix[r, c]);
+            }
+            colMax = -1;
+            for (int c = matrix.ColumnCount() - 1; c >= 0; c--) {
+                if (matrix[r, c] > colMax) {
+                    visible[r, c] = true;
+                }
+                colMax = Math.Max(colMax, matrix[r, c]);
+            }
+        }
+        for (int c = 0; c < matrix.ColumnCount(); c++) {
+            int rowMax = -1;
+            for (int r = 0; r < matrix.RowCount(); r++) {
+                if (matrix[r, c] > rowMax) {
+                    visible[r, c] = true;
+                }
+                rowMax = Math.Max(rowMax, matrix[r, c]);
+            }
+            rowMax = -1;
+            for (int r = matrix.RowCount() - 1; r >= 0; r--) {
+                if (matrix[r, c] > rowMax) {
+                    visible[r, c] = true;
+                }
+                rowMax = Math.Max(rowMax, matrix[r, c]);
+            }
+        }
+
+        return visible.Where(c => c).Count();
+    }
+
     private static int Part2(int[,] matrix) {
         int max = 0;
         for (int i = 0; i < matrix.RowCount(); i++) {
