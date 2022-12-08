@@ -32,18 +32,18 @@ public static class ArrayExtensions {
     }
 
     private static readonly (Directions, int, int)[] Offsets = {
-        (Directions.N, 0, -1),
-        (Directions.E, 1, 0),
-        (Directions.S, 0, 1),
-        (Directions.W, -1, 0),
-        (Directions.NE, 1, -1),
+        (Directions.N, -1, 0),
+        (Directions.E, 0, 1),
+        (Directions.S, 1, 0),
+        (Directions.W, 0, -1),
+        (Directions.NE, -1, 1),
         (Directions.SE, 1, 1),
-        (Directions.SW, -1, 1),
+        (Directions.SW, 1, -1),
         (Directions.NW, -1, -1),
     };
 
-    public static int Rows<T>(this T[,] arr) => arr.GetLength(0);
-    public static int Columns<T>(this T[,] arr) => arr.GetLength(1);
+    public static int RowCount<T>(this T[,] arr) => arr.GetLength(0);
+    public static int ColumnCount<T>(this T[,] arr) => arr.GetLength(1);
 
     public static bool TryGet<T>(this T[] arr, int n, [MaybeNullWhen(false)] out T value) {
         if (n < 0 || n >= arr.Length) {
@@ -155,17 +155,24 @@ public static class ArrayExtensions {
     }
 
     public static void SetColumn<T>(this T[,] arr, int col, T[] data) {
-        int cols = arr.Columns();
+        int cols = arr.ColumnCount();
         if (col < 0 || col >= cols) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
         }
-        int rows = arr.Rows();
+        int rows = arr.RowCount();
         if (rows != data.Length) {
             throw new ArgumentException($"SetColumn with invalid length: {data.Length} != {rows}");
         }
 
         for (int i = 0; i < rows; i++) {
             arr[i, col] = data[i];
+        }
+    }
+
+    public static IEnumerable<T[]> Columns<T>(this T[,] arr) {
+        int count = arr.ColumnCount();
+        for (int i = 0; i < count; i++) {
+            yield return arr.GetColumn(i);
         }
     }
 
@@ -181,11 +188,11 @@ public static class ArrayExtensions {
     }
 
     public static void SetRow<T>(this T[,] arr, int row, T[] data) {
-        int rows = arr.Rows();
+        int rows = arr.RowCount();
         if (row < 0 || row >= rows) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
         }
-        int cols = arr.Columns();
+        int cols = arr.ColumnCount();
         if (cols != data.Length) {
             throw new ArgumentException($"SetColumn with invalid length: {data.Length} != {cols}");
         }
@@ -195,15 +202,22 @@ public static class ArrayExtensions {
         }
     }
 
-    public static T[,] Clone<T>(this T[,] arr, int row, int col, int rows = int.MaxValue, int cols = int.MaxValue) {
+    public static IEnumerable<T[]> Rows<T>(this T[,] arr) {
+        int count = arr.RowCount();
+        for (int i = 0; i < count; i++) {
+            yield return arr.GetRow(i);
+        }
+    }
+
+    public static T[,] Clone<T>(this T[,] arr, int row = 0, int col = 0, int rows = int.MaxValue, int cols = int.MaxValue) {
         if (row < 0 || col < 0) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative.");
         }
         if (rows < 0 || cols < 0) {
             throw new IndexOutOfRangeException("Size was out of range. Must be non-negative.");
         }
-        rows = Math.Min(arr.Rows() - row, rows);
-        cols = Math.Min(arr.Columns() - col, cols);
+        rows = Math.Min(arr.RowCount() - row, rows);
+        cols = Math.Min(arr.ColumnCount() - col, cols);
 
         var result = new T[rows, cols];
         for (int i = 0; i < rows; i++) {
@@ -220,10 +234,10 @@ public static class ArrayExtensions {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
         }
 
-        int rows = arr.Rows();
-        int cols = arr.Columns();
-        int iRows = insert.Rows();
-        int iCols = insert.Columns();
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        int iRows = insert.RowCount();
+        int iCols = insert.ColumnCount();
         if (strictBounds && (row + iRows > rows || col + iCols > cols)) {
             throw new IndexOutOfRangeException($"Cannot insert ({iRows}, {iCols}) into ({rows}, {cols}) at ({row}, {col}).");
         }
@@ -245,8 +259,8 @@ public static class ArrayExtensions {
 
         T[,] result = arr;
         while (n > 0) {
-            int rows = result.Columns();
-            int cols = result.Rows();
+            int rows = result.ColumnCount();
+            int cols = result.RowCount();
             var next = new T[rows, cols];
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
@@ -262,8 +276,8 @@ public static class ArrayExtensions {
     }
 
     public static T[,] Reflect<T>(this T[,] arr, Axis axis = Axis.Horizontal) {
-        int rows = arr.Rows();
-        int cols = arr.Columns();
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
         var result = new T[rows, cols];
         switch (axis) {
             case Axis.Horizontal:
@@ -287,17 +301,23 @@ public static class ArrayExtensions {
         }
     }
 
+    public static IEnumerable<(int, int)> Deltas(this Directions dir) {
+        foreach ((Directions d, int dX, int dY) in Offsets) {
+            if ((dir & d) == 0) continue;
+
+            yield return (dX, dY);
+        }
+    }
+
     public static IEnumerable<(int, int)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir) {
         if ((dir & Directions.Origin) != 0) {
             yield return (row, col);
         }
 
-        int rows = arr.Rows();
-        int cols = arr.Columns();
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
         bool wrap = (dir & Directions.Wrap) != 0;
-        foreach ((Directions d, int dX, int dY) in Offsets) {
-            if ((dir & d) == 0) continue;
-
+        foreach ((int dX, int dY) in dir.Deltas()) {
             int r = row + dX;
             int c = col + dY;
             if (wrap) {
@@ -312,8 +332,8 @@ public static class ArrayExtensions {
     }
 
     public static TR[,] Select<T, TR>(this T[,] items, Func<T, TR> f) {
-        int rows = items.Rows();
-        int cols = items.Columns();
+        int rows = items.RowCount();
+        int cols = items.ColumnCount();
         var result = new TR[rows, cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -325,9 +345,9 @@ public static class ArrayExtensions {
     }
 
     public static TR[,] Compose<T1, T2, TR>(this T1[,] arr1, T2[,] arr2, Func<T1, T2, TR> f) {
-        int rows = arr1.Rows();
-        int cols = arr1.Columns();
-        if (rows != arr2.Rows() || cols != arr2.Columns()) {
+        int rows = arr1.RowCount();
+        int cols = arr1.ColumnCount();
+        if (rows != arr2.RowCount() || cols != arr2.ColumnCount()) {
             throw new ArgumentException("Cannot compose arrays of different dimensions.");
         }
 
@@ -342,8 +362,8 @@ public static class ArrayExtensions {
     }
 
     public static T[,] Resize<T>(this T[,] arr, uint addRows, uint addCols) {
-        int rows = arr.Rows();
-        int cols = arr.Columns();
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
         var result = new T[rows + addRows, cols + addCols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -387,8 +407,8 @@ public static class ArrayExtensions {
     public static BidirectionalGraph<(int R, int C), TaggedEdge<(int, int), (T, T)>> AsGraph<T>(this T[,] arr) {
         var graph = new BidirectionalGraph<(int, int), TaggedEdge<(int, int), (T, T)>>();
 
-        int rows = arr.Rows();
-        int cols = arr.Columns();
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 graph.AddVertex((i, j));
@@ -408,10 +428,23 @@ public static class ArrayExtensions {
 
     public static string PrettyString<T>(this T[,] arr, string delimiter = " ") {
         var builder = new StringBuilder();
-        for (int i = 0; i < arr.Rows(); i++) {
+        for (int i = 0; i < arr.RowCount(); i++) {
             builder.AppendLine(string.Join(delimiter, arr.GetRow(i)));
         }
 
         return builder.ToString();
+    }
+
+    public static int Sum(this int[,] items) {
+        int rows = items.RowCount();
+        int cols = items.ColumnCount();
+        int sum = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                sum += items[i, j];
+            }
+        }
+
+        return sum;
     }
 }

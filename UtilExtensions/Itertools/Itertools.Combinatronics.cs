@@ -62,7 +62,12 @@ public static partial class Itertools {
                 } else {
                     int j = indices.Length - cycles[i];
                     (indices[i], indices[j]) = (indices[j], indices[i]);
-                    yield return indices.Take(length).Select(x => iterable[x]).ToArray();
+
+                    var result = new T[length];
+                    for (int k = 0; k < length; k++) {
+                        result[k] = iterable[indices[k]];
+                    }
+                    yield return result;
                     break;
                 }
             }
@@ -100,7 +105,12 @@ public static partial class Itertools {
             for (int j = i + 1; j < length; j++) {
                 indices[j] = indices[j - 1] + 1;
             }
-            yield return indices.Take(length).Select(x => iterable[x]).ToArray();
+
+            var result = new T[length];
+            for (int k = 0; k < length; k++) {
+                result[k] = iterable[indices[k]];
+            }
+            yield return result;
         }
     }
 
@@ -126,7 +136,11 @@ public static partial class Itertools {
             }
 
             Array.Fill(indices, indices[i] + 1, i, length - i);
-            yield return indices.Take(length).Select(x => iterable[x]).ToArray();
+            var result = new T[length];
+            for (int j = 0; j < length; j++) {
+                result[j] = iterable[indices[j]];
+            }
+            yield return result;
         }
     }
 }

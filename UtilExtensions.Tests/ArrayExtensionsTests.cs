@@ -114,6 +114,21 @@ public class ArrayExtensionsTests {
     }
 
     [Test]
+    public void IterateColumnTest() {
+        int[,] array = {
+            {1, 2, 3},
+            {4, 5, 6},
+        };
+
+        int[][] expected = {
+            new[] {1, 4},
+            new[] {2, 5},
+            new[] {3, 6},
+        };
+        Assert.AreEqual(expected, array.Columns());
+    }
+
+    [Test]
     public void GetSetRowTest() {
         int[,] array = new int[2, 4];
 
@@ -125,6 +140,20 @@ public class ArrayExtensionsTests {
         Assert.Throws<ArgumentException>(() => array.SetRow(0, Array.Empty<int>()));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(-1));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(2));
+    }
+
+    [Test]
+    public void IterateRowTest() {
+        int[,] array = {
+            {1, 2, 3},
+            {4, 5, 6},
+        };
+
+        int[][] expected = {
+            new[] {1, 2, 3},
+            new[] {4, 5, 6},
+        };
+        Assert.AreEqual(expected, array.Rows());
     }
 
     [Test]
@@ -234,8 +263,6 @@ public class ArrayExtensionsTests {
     public void AdjacentTest() {
         int[,] array = new int[3, 3];
 
-        CollectionAssert.AreEquivalent(new []{(2, 2)},
-            array.Adjacent(2, 2, Directions.Origin));
         CollectionAssert.AreEquivalent(new []{(0, 1), (1, 0)},
             array.Adjacent(0, 0, Directions.Cardinal));
         CollectionAssert.AreEquivalent(new []{(1, 1)},
@@ -244,6 +271,16 @@ public class ArrayExtensionsTests {
             array.Adjacent(1, 1, Directions.All));
         CollectionAssert.AreEquivalent(new []{(0, 2), (1, 0), (1, 1), (2, 2)},
             array.Adjacent(1, 2, Directions.Cardinal | Directions.Wrap));
+
+        CollectionAssert.AreEquivalent(new []{(1, 1)}, array.Adjacent(1, 1, Directions.Origin));
+        CollectionAssert.AreEquivalent(new []{(0, 1)}, array.Adjacent(1, 1, Directions.N));
+        CollectionAssert.AreEquivalent(new []{(1, 2)}, array.Adjacent(1, 1, Directions.E));
+        CollectionAssert.AreEquivalent(new []{(2, 1)}, array.Adjacent(1, 1, Directions.S));
+        CollectionAssert.AreEquivalent(new []{(1, 0)}, array.Adjacent(1, 1, Directions.W));
+        CollectionAssert.AreEquivalent(new []{(0, 2)}, array.Adjacent(1, 1, Directions.NE));
+        CollectionAssert.AreEquivalent(new []{(2, 2)}, array.Adjacent(1, 1, Directions.SE));
+        CollectionAssert.AreEquivalent(new []{(2, 0)}, array.Adjacent(1, 1, Directions.SW));
+        CollectionAssert.AreEquivalent(new []{(0, 0)}, array.Adjacent(1, 1, Directions.NW));
     }
 
     [Test]
@@ -254,8 +291,8 @@ public class ArrayExtensionsTests {
         array[1, 2] = 9;
 
         bool[,] result = array.Select(n => n % 2 == 0);
-        Assert.AreEqual(array.Rows(), result.Rows());
-        Assert.AreEqual(array.Columns(), result.Columns());
+        Assert.AreEqual(array.RowCount(), result.RowCount());
+        Assert.AreEqual(array.ColumnCount(), result.ColumnCount());
 
         bool[,] expect = {
             {false, true, true, true},
@@ -318,8 +355,8 @@ public class ArrayExtensionsTests {
         jagged[1] = new int[4];
 
         Assert.Throws<IndexOutOfRangeException>(() => jagged.UnJagged());
-        Assert.AreEqual(2, jagged.UnJagged(true).Rows());
-        Assert.AreEqual(4, jagged.UnJagged(true).Columns());
+        Assert.AreEqual(2, jagged.UnJagged(true).RowCount());
+        Assert.AreEqual(4, jagged.UnJagged(true).ColumnCount());
     }
 
     [Test]
