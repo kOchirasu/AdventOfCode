@@ -209,6 +209,16 @@ public static class ArrayExtensions {
         }
     }
 
+    public static void Fill<T>(this T[,] arr, T value) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                arr[i, j] = value;
+            }
+        }
+    }
+
     public static T[,] Clone<T>(this T[,] arr, int row = 0, int col = 0, int rows = int.MaxValue, int cols = int.MaxValue) {
         if (row < 0 || col < 0) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative.");
