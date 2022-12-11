@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using NUnit.Framework;
 
 namespace UtilExtensions.Tests;
@@ -86,7 +86,8 @@ public class ParseExtensionsTest {
     [TestCase("[R]     [M]             [L]", @"(.{3}) (.{3}) (.{3}) (.{3}) (.{3}) (.{3}) (.{3})", new []{"[R]", "   ", "[M]", "   ", "   ", "   ", "[L]"})]
     [TestCase("[R]     [M]             [L]", @"(?:.(.). ?)+", new []{"R", " ", "M", " ", " ", " ", "L"})]
     [TestCase("take 25 from 123 to 789", @"take (\d+) from (\d+) to (\d+)", new []{"25", "123", "789"})]
-    public void ExtractTest(string input, string pattern, string[] expected) {
+    [TestCase("  Starting items: 95, 89, 63, 67", @"(?:(\d+)[ ,]{0,2})+", new []{"95", "89", "63", "67"})]
+    public void ExtractTest(string input, [RegexPattern] string pattern, string[] expected) {
         Assert.AreEqual(expected, input.Extract(pattern));
     }
 
