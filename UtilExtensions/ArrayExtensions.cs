@@ -436,6 +436,31 @@ public static class ArrayExtensions {
         return graph;
     }
 
+    public static AdjacencyGraph<(int R, int C), TaggedEdge<(int, int), (T, T)>> AsGraph<T>(this T[,] arr, Func<TaggedEdge<(int, int), (T, T)>, bool> addEdgeFunc) {
+        var graph = new AdjacencyGraph<(int, int), TaggedEdge<(int, int), (T, T)>>();
+
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                graph.AddVertex((i, j));
+            }
+        }
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                foreach ((int r, int c) in arr.Adjacent(i, j, Directions.Cardinal)) {
+                    var edge = new TaggedEdge<(int, int), (T, T)>((i, j), (r, c), (arr[i, j], arr[r, c]));
+                    if (addEdgeFunc(edge)) {
+                        graph.AddEdge(edge);
+                    }
+                }
+            }
+        }
+
+        return graph;
+    }
+
     public static string PrettyString<T>(this T[,] arr, string delimiter = " ") {
         var builder = new StringBuilder();
         for (int i = 0; i < arr.RowCount(); i++) {
@@ -464,13 +489,38 @@ public static class ArrayExtensions {
         return sum;
     }
 
-    public static IEnumerable<T> Where<T>(this T[,] arr, Func<T, bool> f) {
+    public static IEnumerable<T> Where<T>(this T[,] arr, Func<T, bool> predicate) {
         int rows = arr.RowCount();
         int cols = arr.ColumnCount();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                if (f(arr[i, j])) {
+                if (predicate(arr[i, j])) {
                     yield return arr[i, j];
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<(int Row, int Col)> Find<T>(this T[,] arr, T value) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+
+                if (EqualityComparer<T>.Default.Equals(arr[i, j], value)) {
+                    yield return (i, j);
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<(int Row, int Col)> Find<T>(this T[,] arr, Func<T, bool> predicate) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (predicate(arr[i, j])) {
+                    yield return (i, j);
                 }
             }
         }

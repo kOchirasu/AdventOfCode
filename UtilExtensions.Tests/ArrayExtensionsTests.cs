@@ -381,4 +381,37 @@ public class ArrayExtensionsTests {
             }
         }
     }
+
+    [Test]
+    public void SumTest() {
+        int[,] array = {
+            {1, 2},
+            {3, 4},
+        };
+
+        Assert.AreEqual(1 + 2 + 3 + 4, array.Sum());
+    }
+
+    [Test]
+    public void WhereTest() {
+        int[,] array = {
+            {1, 2},
+            {3, 4},
+        };
+
+        Assert.AreEqual(new []{2, 4}, array.Where(v => v % 2 == 0));
+    }
+
+    [Test]
+    public void FindTest() {
+        char[,] array = {
+            {'a', 'b', 'c'},
+            {'d', 'a', 'f'},
+            {'g', 'a', 'i'},
+        };
+
+        Assert.AreEqual(new []{(0, 0), (1, 1), (2, 1)}, array.Find('a'));
+        Assert.AreEqual(new []{(0, 1)}, array.Find('b'));
+        Assert.AreEqual(new []{(0, 1), (0, 2)}, array.Find(v => v is 'b' or 'c'));
+    }
 }
