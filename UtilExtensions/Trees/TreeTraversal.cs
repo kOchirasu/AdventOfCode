@@ -1,4 +1,4 @@
-﻿namespace UtilExtensions.Trees; 
+﻿namespace UtilExtensions.Trees;
 
 public enum TreeTraversal  {
     Inorder,

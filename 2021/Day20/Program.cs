@@ -49,9 +49,9 @@ namespace Day20 {
         }
 
         private static int[,] Enhance(int[] algo, int[,] image, int oob) {
-            int[,] enhanced = new int[image.Rows() + 2, image.Columns() + 2];
-            for (int i = 0; i < enhanced.Rows(); i++) {
-                for (int j = 0; j < enhanced.Columns(); j++) {
+            int[,] enhanced = new int[image.RowCount() + 2, image.ColumnCount() + 2];
+            for (int i = 0; i < enhanced.RowCount(); i++) {
+                for (int j = 0; j < enhanced.ColumnCount(); j++) {
                     int index = 0;
                     for (int dX = -1; dX < 2; dX++) {
                         for (int dY = -1; dY < 2; dY++) {

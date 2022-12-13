@@ -1,27 +1,25 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using UtilExtensions.Trees;
 
 namespace Day13;
 
-public class Packet : IComparable<Packet> {
-    private readonly bool isInt;
-    private readonly int intValue;
-    private readonly List<Packet> subPackets = new();
-
+public class Packet : TreeNode<int>, IComparable<Packet> {
     public bool IsLocator = false;
 
     private Packet(Packet packet) {
-        Debug.Assert(packet.isInt, "converting list to packet");
-        subPackets.Add(packet);
+        Debug.Assert(packet.Value >= 0, "converting list to packet");
+        Value = -1;
+        AddChild(packet);
     }
 
     public Packet(string input) {
         if (int.TryParse(input, out int value)) {
-            isInt = true;
-            intValue = value;
+            Value = value;
         } else {
+            Value = -1;
             foreach (string sub in Parse(input)) {
-                subPackets.Add(new Packet(sub));
+                AddChild(new Packet(sub));
             }
         }
     }
@@ -63,19 +61,22 @@ public class Packet : IComparable<Packet> {
             throw new ArgumentException("Invalid compare to null");
         }
 
-        if (isInt && other.isInt) {
-            return intValue.CompareTo(other.intValue);
+        if (Value >= 0 && other.Value >= 0) {
+            return Value.CompareTo(other.Value);
         }
-        if (!isInt && !other.isInt) {
-            int total = Math.Max(subPackets.Count, other.subPackets.Count);
+        if (Value < 0 && other.Value < 0) {
+            int total = Math.Max(Children.Count, other.Children.Count);
             for (int i = 0; i < total; i++) {
-                if (i >= subPackets.Count) {
+                if (i >= Children.Count) {
                     return -1;
                 }
-                if (i >= other.subPackets.Count) {
+                if (i >= other.Children.Count) {
                     return 1;
                 }
-                int compareResult = subPackets[i].CompareTo(other.subPackets[i]);
+                if (Children[i] is not Packet packet) {
+                    throw new ArgumentException("Compare invalid packet");
+                }
+                int compareResult = packet.CompareTo(other.Children[i] as Packet);
                 if (compareResult == 0) {
                     continue;
                 }
@@ -84,20 +85,12 @@ public class Packet : IComparable<Packet> {
             return 0; // Continue;
         }
 
-        if (isInt) {
+        if (Value >= 0) {
             var packet = new Packet(this);
             return packet.CompareTo(other);
         } else {
             var packet = new Packet(other);
             return CompareTo(packet);
         }
-    }
-
-    public override string ToString() {
-        if (isInt) {
-            return $"{intValue}";
-        }
-
-        return $"[{string.Join(",", subPackets)}]";
     }
 }

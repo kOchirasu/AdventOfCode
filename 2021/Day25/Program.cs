@@ -11,8 +11,8 @@ namespace Day25 {
         }
 
         private static int Part1(char[,] input) {
-            int rows = input.Rows();
-            int cols = input.Columns();
+            int rows = input.RowCount();
+            int cols = input.ColumnCount();
 
             int steps = 0;
             bool moved;

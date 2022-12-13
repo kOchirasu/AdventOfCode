@@ -35,7 +35,7 @@ public static class Program {
         List<Packet> list = packets.SelectMany(p => new[] {p.Item1, p.Item2}).ToList();
         list.Add(new Packet("[[2]]") {IsLocator = true});
         list.Add(new Packet("[[6]]") {IsLocator = true});
-        list.Sort((a, b) => a.CompareTo(b));
+        list.Sort();
 
         int result = 1;
         for (int i = 0; i < list.Count; i++) {

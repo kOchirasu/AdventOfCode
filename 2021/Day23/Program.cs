@@ -106,14 +106,14 @@ namespace Day23 {
                         // restore mutated state
                         hallway[hIndex] = EMPTY;
                     }
-                    rooms[i, rooms.Columns() - steps] = type;
+                    rooms[i, rooms.ColumnCount() - steps] = type;
                 }
             }
 
             private bool HallwayToRoom() {
                 bool mutated = false;
                 for (int i = 3; i >= 0; i--) {
-                    int space = rooms.Columns() - EmptyIndex(i);
+                    int space = rooms.ColumnCount() - EmptyIndex(i);
 
                     for (int j = 0; j < HallwayIndex.Length && space > 0; j++) {
                         int hIndex = HallwayIndex[j];
@@ -138,7 +138,7 @@ namespace Day23 {
             private bool RoomToRoom() {
                 bool mutated = false;
                 for (int i = 3; i >= 0; i--) {
-                    int space = rooms.Columns() - EmptyIndex(i);
+                    int space = rooms.ColumnCount() - EmptyIndex(i);
 
                     for (int j = 0; j < 4 && space > 0; j++) {
                         if (i == j) continue; // move to self
@@ -163,7 +163,7 @@ namespace Day23 {
 
             private int EmptyIndex(int roomNumber) {
                 int index = 0;
-                for (int i = 0; i < rooms.Columns(); i++) {
+                for (int i = 0; i < rooms.ColumnCount(); i++) {
                     if (rooms[roomNumber, i] == roomNumber) {
                         index++;
                         continue;
@@ -180,7 +180,7 @@ namespace Day23 {
             }
 
             private int PeekRoom(int roomNumber, out int index) {
-                for (int i = rooms.Columns() - 1; i >= 0; i--) {
+                for (int i = rooms.ColumnCount() - 1; i >= 0; i--) {
                     if (rooms[roomNumber, i] == EMPTY) continue;
 
                     index = i;
@@ -197,14 +197,14 @@ namespace Day23 {
                 }
 
                 rooms[roomNumber, index] = EMPTY;
-                return rooms.Columns() - index;
+                return rooms.ColumnCount() - index;
             }
 
             private int AddToRoom(int roomNumber) {
-                for (int i = 0; i < rooms.Columns(); i++) {
+                for (int i = 0; i < rooms.ColumnCount(); i++) {
                     if (rooms[roomNumber, i] == EMPTY) {
                         rooms[roomNumber, i] = roomNumber;
-                        return rooms.Columns() - i;
+                        return rooms.ColumnCount() - i;
                     }
 
                     Debug.Assert(rooms[roomNumber, i] == roomNumber);
@@ -226,8 +226,8 @@ namespace Day23 {
             }
 
             public bool Done() {
-                for (int i = 0; i < rooms.Rows(); i++) {
-                    for (int j = 0; j < rooms.Columns(); j++) {
+                for (int i = 0; i < rooms.RowCount(); i++) {
+                    for (int j = 0; j < rooms.ColumnCount(); j++) {
                         if (rooms[i, j] != i) {
                             return false;
                         }

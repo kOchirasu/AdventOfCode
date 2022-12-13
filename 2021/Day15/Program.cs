@@ -24,8 +24,8 @@ namespace Day15 {
             int risk = int.MaxValue;
             while (true) {
                 bool updated = false;
-                for (int i = 0; i < input.Rows(); i++) {
-                    for (int j = 0; j < input.Columns(); j++) {
+                for (int i = 0; i < input.RowCount(); i++) {
+                    for (int j = 0; j < input.ColumnCount(); j++) {
                         if (i == 0 && j == 0) continue;
                         updated |= Dp(dpMatrix, input, i, j);
                     }
@@ -35,15 +35,15 @@ namespace Day15 {
                     break;
                 }
 
-                risk = dpMatrix[dpMatrix.Rows() - 1, dpMatrix.Columns() - 1];
+                risk = dpMatrix[dpMatrix.RowCount() - 1, dpMatrix.ColumnCount() - 1];
             }
 
             return risk;
         }
 
         private static int Part2(int[,] input) {
-            int rows = input.Rows();
-            int cols = input.Columns();
+            int rows = input.RowCount();
+            int cols = input.ColumnCount();
             int[,] newInput = new int[rows * 5, cols * 5];
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++) {
@@ -59,8 +59,8 @@ namespace Day15 {
             int risk = int.MaxValue;
             while (true) {
                 bool updated = false;
-                for (int i = 0; i < newInput.Rows(); i++) {
-                    for (int j = 0; j < newInput.Columns(); j++) {
+                for (int i = 0; i < newInput.RowCount(); i++) {
+                    for (int j = 0; j < newInput.ColumnCount(); j++) {
                         if (i == 0 && j == 0) continue;
                         updated |= Dp(dpMatrix, newInput, i, j);
                     }
@@ -70,7 +70,7 @@ namespace Day15 {
                     break;
                 }
 
-                risk = dpMatrix[dpMatrix.Rows() - 1, dpMatrix.Columns() - 1];
+                risk = dpMatrix[dpMatrix.RowCount() - 1, dpMatrix.ColumnCount() - 1];
             }
 
             return risk;

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using UtilExtensions.Trees;
@@ -17,7 +18,7 @@ public class BinaryTreeTests {
     private readonly BinaryNode<string> i = new("I");
     private BinaryTree<string> tree;
 
-    [SetUp]
+    [OneTimeSetUp]
     public void Setup() {
         f.SetLeft(b);
         f.SetRight(g);
@@ -29,6 +30,7 @@ public class BinaryTreeTests {
         i.SetLeft(h);
 
         tree = new BinaryTree<string>(f);
+        Console.WriteLine(tree.ToString());
     }
 
     [Test]
