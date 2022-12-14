@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace UtilExtensions.Tests;
 
@@ -74,14 +75,13 @@ public class DynamicMatrixTests {
             {"A", "B"},
             {"C", "D"},
         };
-        var matrix = new DynamicMatrix<string>(rawMatrix, true);
-        string defaultValue = matrix[2, 2];
-        Assert.IsNull(defaultValue);
+        var matrix = new DynamicMatrix<string>(rawMatrix, ".", true);
+        _ = matrix[2, 2];
 
         string[,] expected = {
-            {"A", "B", null},
-            {"C", "D", null},
-            {null, null, null},
+            {"A", "B", "."},
+            {"C", "D", "."},
+            {".", ".", "."},
         };
         Assert.AreEqual(expected, matrix);
     }

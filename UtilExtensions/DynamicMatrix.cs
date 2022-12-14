@@ -8,18 +8,20 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     private int originCol;
 
     public T[,] Value { get; private set; }
+    public readonly T Default;
 
     private readonly bool expandOnAccess;
 
-    public DynamicMatrix(T[,] matrix, bool expandOnAccess = false) {
+    public DynamicMatrix(T[,] matrix, T @default = default(T), bool expandOnAccess = false) {
         Value = matrix;
+        Default = @default;
         originRow = 0;
         originCol = 0;
 
         this.expandOnAccess = expandOnAccess;
     }
 
-    public DynamicMatrix(int rows = 0, int cols = 0, bool expandOnAccess = false) : this(new T[rows, cols], expandOnAccess) { }
+    public DynamicMatrix(int rows = 0, int cols = 0, T @default = default(T), bool expandOnAccess = false) : this(new T[rows, cols], @default, expandOnAccess) { }
 
     public static implicit operator DynamicMatrix<T>(T[,] matrix) {
         return new DynamicMatrix<T>(matrix);
@@ -41,7 +43,7 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     }
 
     public DynamicMatrix<T> Clone() {
-        return new DynamicMatrix<T>(Value.Clone(0)) {
+        return new DynamicMatrix<T>(Value.Clone(0), Default, expandOnAccess) {
             originRow = originRow,
             originCol = originCol,
         };
@@ -87,15 +89,13 @@ public class DynamicMatrix<T> : IEnumerable<T> {
             expandCol = computedCol - colCount + 1;
         }
 
-        if (expandRow > 0 || expandCol > 0) {
-            var newMatrix = new T[rowCount + expandRow, colCount + expandCol];
-            originRow += offsetRow;
-            originCol += offsetCol;
+        var newMatrix = new T[rowCount + expandRow, colCount + expandCol];
+        newMatrix.Fill(Default);
+        originRow += offsetRow;
+        originCol += offsetCol;
 
-            newMatrix.Insert(Value, offsetRow, offsetCol);
-            Value = newMatrix;
-        }
-
+        newMatrix.Insert(Value, offsetRow, offsetCol);
+        Value = newMatrix;
         return (computedRow + offsetRow, computedCol + offsetCol);
     }
 }
