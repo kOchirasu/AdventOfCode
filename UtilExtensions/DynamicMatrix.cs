@@ -4,19 +4,22 @@ using System.Collections.Generic;
 namespace UtilExtensions;
 
 public class DynamicMatrix<T> : IEnumerable<T> {
-    private int originRow;
-    private int originCol;
+    private int offsetRow;
+    private int offsetCol;
 
     public T[,] Value { get; private set; }
     public readonly T Default;
 
     private readonly bool expandOnAccess;
+    
+    public int OriginRow => -offsetRow;
+    public int OriginCol => -offsetCol;
 
     public DynamicMatrix(T[,] matrix, T @default = default(T), bool expandOnAccess = false) {
         Value = matrix;
         Default = @default;
-        originRow = 0;
-        originCol = 0;
+        offsetRow = 0;
+        offsetCol = 0;
 
         this.expandOnAccess = expandOnAccess;
     }
@@ -30,7 +33,7 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     public T this[int row, int col] {
         get {
             if (!expandOnAccess) {
-                return Value[row + originRow, col + originCol];
+                return Value[row + offsetRow, col + offsetCol];
             }
 
             (int normalizeRow, int normalizeCol) = EnsureSize(row, col);
@@ -44,8 +47,8 @@ public class DynamicMatrix<T> : IEnumerable<T> {
 
     public DynamicMatrix<T> Clone() {
         return new DynamicMatrix<T>(Value.Clone(0), Default, expandOnAccess) {
-            originRow = originRow,
-            originCol = originCol,
+            offsetRow = offsetRow,
+            offsetCol = offsetCol,
         };
     }
 
@@ -62,8 +65,8 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     }
 
     private (int, int) EnsureSize(int row, int col) {
-        int computedRow = row + originRow;
-        int computedCol = col + originCol;
+        int computedRow = row + this.offsetRow;
+        int computedCol = col + this.offsetCol;
         int rowCount = Value.RowCount();
         int colCount = Value.ColumnCount();
 
@@ -72,18 +75,18 @@ public class DynamicMatrix<T> : IEnumerable<T> {
         }
 
         int expandRow = 0;
-        int offsetRow = 0;
+        int addOffsetRow = 0;
         if (computedRow < 0) {
-            offsetRow = -computedRow;
+            addOffsetRow = -computedRow;
             expandRow = -computedRow;
         } else if (computedRow >= rowCount) {
             expandRow = computedRow - rowCount + 1;
         }
 
         int expandCol = 0;
-        int offsetCol = 0;
+        int addOffsetCol = 0;
         if (computedCol < 0) {
-            offsetCol = -computedCol;
+            addOffsetCol = -computedCol;
             expandCol = -computedCol;
         } else if (computedCol >= colCount) {
             expandCol = computedCol - colCount + 1;
@@ -91,11 +94,11 @@ public class DynamicMatrix<T> : IEnumerable<T> {
 
         var newMatrix = new T[rowCount + expandRow, colCount + expandCol];
         newMatrix.Fill(Default);
-        originRow += offsetRow;
-        originCol += offsetCol;
+        offsetRow += addOffsetRow;
+        offsetCol += addOffsetCol;
 
-        newMatrix.Insert(Value, offsetRow, offsetCol);
+        newMatrix.Insert(Value, addOffsetRow, addOffsetCol);
         Value = newMatrix;
-        return (computedRow + offsetRow, computedCol + offsetCol);
+        return (computedRow + addOffsetRow, computedCol + addOffsetCol);
     }
 }

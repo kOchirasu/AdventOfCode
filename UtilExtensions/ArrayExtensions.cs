@@ -239,7 +239,7 @@ public static class ArrayExtensions {
         return result;
     }
 
-    public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true) {
+    public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true, T ignore = default) {
         if (strictBounds && (row < 0 || col < 0)) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
         }
@@ -260,6 +260,33 @@ public static class ArrayExtensions {
                 }
 
                 arr[row + i, col + j] = insert[i, j];
+            }
+        }
+    }
+    
+    public static void ConditionalInsert<T>(this T[,] arr, T[,] insert, int row, int col, Func<T, bool> shouldInsert, bool strictBounds = true)  {
+        if (strictBounds && (row < 0 || col < 0)) {
+            throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
+        }
+
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        int iRows = insert.RowCount();
+        int iCols = insert.ColumnCount();
+        if (strictBounds && (row + iRows > rows || col + iCols > cols)) {
+            throw new IndexOutOfRangeException($"Cannot insert ({iRows}, {iCols}) into ({rows}, {cols}) at ({row}, {col}).");
+        }
+
+        for (int i = 0; i < iRows; i++) {
+            for (int j = 0; j < iCols; j++) {
+                if (!strictBounds) {
+                    if (row + i < 0 || row + i >= rows) continue;
+                    if (col + j < 0 || col + j >= cols) continue;
+                }
+
+                if (shouldInsert(insert[i, j])) {
+                    arr[row + i, col + j] = insert[i, j];
+                }
             }
         }
     }
@@ -506,7 +533,6 @@ public static class ArrayExtensions {
         int cols = arr.ColumnCount();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-
                 if (EqualityComparer<T>.Default.Equals(arr[i, j], value)) {
                     yield return (i, j);
                 }

@@ -208,6 +208,32 @@ public class ArrayExtensionsTests {
         single.Insert(array, 0, -1, false);
         Assert.AreEqual(new [,]{{9}}, single);
     }
+    
+    [Test]
+    public void ConditionalInsertTest() {
+        bool ShouldInsert(int n) => n != 1;
+        
+        int[,] array = new int[3, 3];
+        int[,] insert1 = {
+            {9, 1},
+        };
+        int[,] insert2 = {
+            {1, 2},
+            {3, 1},
+        };
+
+        Assert.Throws<IndexOutOfRangeException>(() => array.ConditionalInsert(insert1, -1, 0, ShouldInsert));
+        Assert.Throws<IndexOutOfRangeException>(() => array.ConditionalInsert(insert2, 1, 2, ShouldInsert));
+
+        int[,] result = {
+            {9, 0, 0},
+            {0, 0, 2},
+            {0, 3, 0},
+        };
+        array.ConditionalInsert(insert1, 0, 0, ShouldInsert);
+        array.ConditionalInsert(insert2, 1, 1, ShouldInsert);
+        Assert.AreEqual(result, array);
+    }
 
     [Test]
     public void RotateTest() {
