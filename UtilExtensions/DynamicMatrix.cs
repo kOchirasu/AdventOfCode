@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace UtilExtensions;
@@ -11,7 +12,7 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     public readonly T Default;
 
     private readonly bool expandOnAccess;
-    
+
     public int OriginRow => -offsetRow;
     public int OriginCol => -offsetCol;
 
@@ -65,8 +66,8 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     }
 
     private (int, int) EnsureSize(int row, int col) {
-        int computedRow = row + this.offsetRow;
-        int computedCol = col + this.offsetCol;
+        int computedRow = row + offsetRow;
+        int computedCol = col + offsetCol;
         int rowCount = Value.RowCount();
         int colCount = Value.ColumnCount();
 
@@ -100,5 +101,17 @@ public class DynamicMatrix<T> : IEnumerable<T> {
         newMatrix.Insert(Value, addOffsetRow, addOffsetCol);
         Value = newMatrix;
         return (computedRow + addOffsetRow, computedCol + addOffsetCol);
+    }
+
+    public void Insert(T[,] insert, int row, int col) {
+        (int normalizeRow, int normalizeCol) = EnsureSize(row, col);
+        EnsureSize(row + insert.RowCount() - 1, col + insert.ColumnCount() - 1);
+        Value.Insert(insert, normalizeRow, normalizeCol);
+    }
+
+    public void ConditionalInsert(T[,] insert, int row, int col, Func<T, bool> shouldInsert) {
+        (int normalizeRow, int normalizeCol) = EnsureSize(row, col);
+        EnsureSize(row + insert.RowCount() - 1, col + insert.ColumnCount() - 1);
+        Value.ConditionalInsert(insert, normalizeRow, normalizeCol, shouldInsert);
     }
 }

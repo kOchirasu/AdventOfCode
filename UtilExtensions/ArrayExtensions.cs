@@ -239,7 +239,7 @@ public static class ArrayExtensions {
         return result;
     }
 
-    public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true, T ignore = default) {
+    public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true) {
         if (strictBounds && (row < 0 || col < 0)) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
         }
@@ -263,7 +263,7 @@ public static class ArrayExtensions {
             }
         }
     }
-    
+
     public static void ConditionalInsert<T>(this T[,] arr, T[,] insert, int row, int col, Func<T, bool> shouldInsert, bool strictBounds = true)  {
         if (strictBounds && (row < 0 || col < 0)) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
