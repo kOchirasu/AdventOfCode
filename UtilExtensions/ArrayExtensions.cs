@@ -143,6 +143,24 @@ public static class ArrayExtensions {
         return arr[row, col];
     }
 
+    public static bool TryGet<T>(this T[,,] arr, int row, int col, int dep, [MaybeNullWhen(false)] out T value) {
+        if (row < 0 || col < 0 || dep < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1) || dep >= arr.GetLength(2)) {
+            value = default;
+            return false;
+        }
+
+        value = arr[row, col, dep];
+        return true;
+    }
+
+    public static T GetOrDefault<T>(this T[,,] arr, int row, int col, int dep, T @default = default(T)) {
+        if (row < 0 || col < 0 || dep < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1) || dep >= arr.GetLength(2)) {
+            return @default;
+        }
+
+        return arr[row, col, dep];
+    }
+
     public static T[] GetColumn<T>(this T[,] arr, int col) {
         int length = arr.GetLength(0);
 
