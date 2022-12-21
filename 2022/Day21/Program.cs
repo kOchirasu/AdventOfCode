@@ -36,6 +36,8 @@ public static class Program {
         var tree = new BinaryTree<string>(lookup["root"]);
         Console.WriteLine(Part1(tree));
         Console.WriteLine(Part2(lookup, tree));
+
+        // Console.WriteLine(Part2WithEquationSolver(lookup, tree));
     }
 
     private static long Part1(BinaryTree<string> tree) {
@@ -45,17 +47,58 @@ public static class Program {
             }
 
             Debug.Assert(left != null && right != null, $"{node.Value} has null children");
+            long a = long.Parse(left);
+            long b = long.Parse(right);
             return node.Value switch {
-                "+" => $"{long.Parse(left) + long.Parse(right)}",
-                "-" => $"{long.Parse(left) - long.Parse(right)}",
-                "*" => $"{long.Parse(left) * long.Parse(right)}",
-                "/" => $"{long.Parse(left) / long.Parse(right)}",
+                "+" => $"{a + b}",
+                "-" => $"{a - b}",
+                "*" => $"{a * b}",
+                "/" => $"{a / b}",
                 _ => throw new ArgumentException($"invalid operation: {node.Value}"),
             };
         }));
     }
 
-    private static long Part2(IDictionary<string, BinaryNode<string>> lookup, BinaryTree<string> tree) {
+    private static double Part2(IDictionary<string, BinaryNode<string>> lookup, BinaryTree<string> tree) {
+        lookup["root"].Value = "=";
+
+        double lo = long.MinValue;
+        double hi = long.MaxValue;
+        while (true) {
+            double mid = (lo + hi) / 2;
+            lookup["humn"].Value = $"{mid}";
+            string result = tree.Aggregate((node, left, right) => {
+                if (left == null || right == null) {
+                    return node.Value;
+                }
+
+                double a = double.Parse(left);
+                double b = double.Parse(right);
+                return node.Value switch {
+                    "+" => $"{a + b}",
+                    "-" => $"{a - b}",
+                    "*" => $"{a * b}",
+                    "/" => $"{a / b}",
+                    "=" => $"{a.CompareTo(b)}",
+                    _ => throw new ArgumentException($"invalid operation: {node.Value}"),
+                };
+            });
+
+            // Binary search
+            switch (int.Parse(result)) {
+                case > 0:
+                    lo = mid + 1;
+                    break;
+                case < 0:
+                    hi = mid - 1;
+                    break;
+                default:
+                    return mid;
+            }
+        }
+    }
+
+    private static long Part2WithEquationSolver(IDictionary<string, BinaryNode<string>> lookup, BinaryTree<string> tree) {
         lookup["root"].Value = "=";
         lookup["humn"].Value = "x";
 
@@ -65,12 +108,14 @@ public static class Program {
             }
 
             try {
+                long a = long.Parse(left);
+                long b = long.Parse(right);
                 return node.Value switch {
-                    "+" => $"{long.Parse(left) + long.Parse(right)}",
-                    "-" => $"{long.Parse(left) - long.Parse(right)}",
-                    "*" => $"{long.Parse(left) * long.Parse(right)}",
-                    "/" => $"{long.Parse(left) / long.Parse(right)}",
-                    "=" => $"{long.Parse(left) == long.Parse(right)}",
+                    "+" => $"{a + b}",
+                    "-" => $"{a - b}",
+                    "*" => $"{a * b}",
+                    "/" => $"{a / b}",
+                    "=" => $"{a.CompareTo(b)}",
                     _ => throw new ArgumentException($"invalid operation: {node.Value}"),
                 };
             } catch {
