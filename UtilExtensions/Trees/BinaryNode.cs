@@ -347,7 +347,7 @@ public class BinaryNode<T> {
         builder.Append(indent);
         builder.Append("+->");
         builder.AppendLine(node?.Value?.ToString() ?? "NULL");
-        if (node == null) {
+        if (node?.Left == null && node?.Right == null) {
             return;
         }
 
