@@ -78,10 +78,10 @@ public static class ParseExtensions {
         return StringMatrix(str, pattern).Select(long.Parse);
     }
 
-    public static char[,] CharMatrix(this string[] lines) {
-        return lines.Select(row => row.Replace(" ", "").ToCharArray())
+    public static char[,] CharMatrix(this string[] lines, bool expand = true) {
+        return lines.Select(row => row.ToCharArray())
             .ToArray()
-            .UnJagged();
+            .UnJagged(expand);
     }
 
     public static int[,] DigitMatrix(this string[] lines) {
