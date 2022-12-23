@@ -208,11 +208,11 @@ public class ArrayExtensionsTests {
         single.Insert(array, 0, -1, false);
         Assert.AreEqual(new [,]{{9}}, single);
     }
-    
+
     [Test]
     public void ConditionalInsertTest() {
         bool ShouldInsert(int n) => n != 1;
-        
+
         int[,] array = new int[3, 3];
         int[,] insert1 = {
             {9, 1},
@@ -236,11 +236,29 @@ public class ArrayExtensionsTests {
     }
 
     [Test]
+    public void ExtractTest() {
+        char[,] array = {
+            {'a', 'b', 'c', 'd'},
+            {'e', 'f', 'g', 'h'},
+            {'i', 'j', 'k', 'l'},
+            {'m', 'n', 'o', 'p'},
+        };
+
+        char[,] result = {
+            {'f', 'g'},
+            {'j', 'k'},
+            {'n', 'o'},
+        };
+        Assert.AreEqual(result, array.Extract(1, 1, 3, 2));
+    }
+
+    [Test]
     public void RotateTest() {
         int[,] rot0 = {
             {0, 1, 2},
             {3, 4, 5},
         };
+        Assert.AreEqual(rot0, rot0.Rotate(-4));
         Assert.AreEqual(rot0, rot0.Rotate(0));
         Assert.AreEqual(rot0, rot0.Rotate(4));
 

@@ -25,6 +25,7 @@ public static class ArrayExtensions {
         SW = 128,
         NW = 256,
         Wrap = 512,
+        Expand = 1024,
 
         Cardinal = N | E | S | W,
         Intermediate = NE | SE | SW | NW,
@@ -309,6 +310,17 @@ public static class ArrayExtensions {
         }
     }
 
+    public static T[,] Extract<T>(this T[,] arr, int row, int col, int rowCount, int colCount) {
+        var result = new T[rowCount, colCount];
+        for (int i = row; i < row + rowCount; i++) {
+            for (int j = col; j < col + colCount; j++) {
+                result[i - row, j - col] = arr[i, j];
+            }
+        }
+
+        return result;
+    }
+
     public static T[,] Rotate<T>(this T[,] arr, int n = 1) {
         n = (n + 4) % 4; // 0, 1, 2, 3 rotations only
 
@@ -372,6 +384,7 @@ public static class ArrayExtensions {
         int rows = arr.RowCount();
         int cols = arr.ColumnCount();
         bool wrap = (dir & Directions.Wrap) != 0;
+        bool expand = (dir & Directions.Expand) != 0;
         foreach ((int dX, int dY) in dir.Deltas()) {
             int r = row + dX;
             int c = col + dY;
@@ -380,7 +393,7 @@ public static class ArrayExtensions {
                 c = (c + cols) % cols;
             }
 
-            if (arr.TryGet(r, c, out T? _)) {
+            if (arr.TryGet(r, c, out T? _) || expand) {
                 yield return (r, c);
             }
         }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using static UtilExtensions.ArrayExtensions;
 
 namespace UtilExtensions;
 
-public class DynamicMatrix<T> : IEnumerable<T> {
+public sealed class DynamicMatrix<T> : IEnumerable<T> {
     private int offsetRow;
     private int offsetCol;
 
@@ -13,8 +14,10 @@ public class DynamicMatrix<T> : IEnumerable<T> {
 
     private readonly bool expandOnAccess;
 
-    public int OriginRow => -offsetRow;
-    public int OriginCol => -offsetCol;
+    public int StartRow => -offsetRow;
+    public int EndRow => Value.RowCount() - 1 - offsetRow;
+    public int StartCol => -offsetCol;
+    public int EndCol => Value.ColumnCount() - 1 - offsetCol;
 
     public DynamicMatrix(T[,] matrix, T @default = default(T), bool expandOnAccess = false) {
         Value = matrix;
@@ -31,6 +34,9 @@ public class DynamicMatrix<T> : IEnumerable<T> {
         return new DynamicMatrix<T>(matrix);
     }
 
+    public (int Row, int Col) Normalize(int row, int col) => (row + offsetRow, col + offsetCol);
+    public (int Row, int Col) Normalize((int Row, int Col) pos) => (pos.Row + offsetRow, pos.Col + offsetCol);
+
     public T this[int row, int col] {
         get {
             if (!expandOnAccess) {
@@ -46,6 +52,14 @@ public class DynamicMatrix<T> : IEnumerable<T> {
         }
     }
 
+    public T[] GetRow(int row) {
+        return Value.GetRow(row + offsetRow);
+    }
+
+    public T[] GetColumn(int col) {
+        return Value.GetColumn(col + offsetCol);
+    }
+
     public DynamicMatrix<T> Clone() {
         return new DynamicMatrix<T>(Value.Clone(0), Default, expandOnAccess) {
             offsetRow = offsetRow,
@@ -57,6 +71,10 @@ public class DynamicMatrix<T> : IEnumerable<T> {
         return Value.PrettyString();
     }
 
+    public string PrettyString(string delimiter = " ") {
+        return Value.PrettyString(delimiter);
+    }
+
     public IEnumerator<T> GetEnumerator() {
         return Value.ToEnumerable().GetEnumerator();
     }
@@ -66,8 +84,7 @@ public class DynamicMatrix<T> : IEnumerable<T> {
     }
 
     private (int, int) EnsureSize(int row, int col) {
-        int computedRow = row + offsetRow;
-        int computedCol = col + offsetCol;
+        (int computedRow, int computedCol) = Normalize(row, col);
         int rowCount = Value.RowCount();
         int colCount = Value.ColumnCount();
 
@@ -113,5 +130,60 @@ public class DynamicMatrix<T> : IEnumerable<T> {
         (int normalizeRow, int normalizeCol) = EnsureSize(row, col);
         EnsureSize(row + insert.RowCount() - 1, col + insert.ColumnCount() - 1);
         Value.ConditionalInsert(insert, normalizeRow, normalizeCol, shouldInsert);
+    }
+
+    public T[,] Extract(int row, int col, int rowCount, int colCount) {
+        (int normalizeRow, int normalizeCol) = Normalize(row, col);
+        return Value.Extract(normalizeRow, normalizeCol, rowCount, colCount);
+    }
+
+    public DynamicMatrix<T> Rotate(int n = 1) {
+        n = (n + 4) % 4; // 0, 1, 2, 3 rotations only
+        (int newOffsetRow, int newOffsetCol) = (offsetRow, offsetCol);
+        for (int i = 0; i < n; i++) {
+            (newOffsetRow, newOffsetCol) = (newOffsetCol, -newOffsetRow);
+        }
+
+        T[,] rotated = Value.Rotate(n);
+        int rowWrap = rotated.RowCount() - 1;
+        int colWrap = rotated.ColumnCount() - 1;
+        return new DynamicMatrix<T>(rotated, Default, expandOnAccess) {
+            offsetRow = (newOffsetRow + rowWrap) % rowWrap,
+            offsetCol = (newOffsetCol + colWrap) % colWrap,
+        };
+    }
+
+    public DynamicMatrix<T> Reflect(Axis axis = Axis.Horizontal) {
+        return new DynamicMatrix<T>(Value.Reflect(axis), Default, expandOnAccess) {
+            offsetRow = axis switch {
+                Axis.Horizontal => offsetRow,
+                Axis.Vertical => Value.RowCount() - 1 - offsetRow,
+                _ => throw new ArgumentException($"Invalid Axis: {axis}")
+            },
+            offsetCol = axis switch {
+                Axis.Horizontal => Value.ColumnCount() - 1 - offsetCol,
+                Axis.Vertical => offsetCol,
+                _ => throw new ArgumentException($"Invalid Axis: {axis}")
+            },
+        };
+    }
+
+    public IEnumerable<(int, int)> Adjacent(int row, int col, Directions dir) {
+        (int normalizeRow, int normalizeCol) = Normalize(row, col);
+        foreach ((int r, int c) in Value.Adjacent(normalizeRow, normalizeCol, dir)) {
+            yield return (r - offsetRow, c - offsetCol);
+        }
+    }
+
+    public IEnumerable<(int Row, int Col)> Find(T value) {
+        foreach ((int r, int c) in Value.Find(value)) {
+            yield return (r - offsetRow, c - offsetCol);
+        }
+    }
+
+    public IEnumerable<(int Row, int Col)> Find(Func<T, bool> predicate) {
+        foreach ((int r, int c) in Value.Find(predicate)) {
+            yield return (r - offsetRow, c - offsetCol);
+        }
     }
 }
