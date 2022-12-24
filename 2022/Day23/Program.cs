@@ -51,7 +51,7 @@ public static class Program {
     }
 
     private static bool Simulate(DynamicMatrix<char> grid, int iteration) {
-        Dictionary<(int r, int c), List<(int r, int c)>> moves = new();
+        var moves = new DefaultDictionary<(int r, int c), List<(int r, int c)>>(() => new List<(int r, int c)>());
         foreach ((int r, int c) elf in grid.Find('#')) {
             if (grid.Adjacent(elf.r, elf.c, Directions.All).All(p => grid[p.Item1, p.Item2] == '.')) {
                 continue;
@@ -61,10 +61,6 @@ public static class Program {
                 (Directions Check, Directions Direction) rule = Rules[(iteration + i) % 4];
                 if (grid.Adjacent(elf.r, elf.c, rule.Check).All(p => grid[p.Item1, p.Item2] == '.')) {
                     (int, int) target = grid.Adjacent(elf.r, elf.c, rule.Direction | Directions.Expand).Single();
-                    if (!moves.ContainsKey(target)) {
-                        moves[target] = new List<(int, int)>();
-                    }
-
                     moves[target].Add(elf);
                     break;
                 }
