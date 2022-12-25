@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 
 namespace Day25;
 
@@ -8,41 +9,48 @@ public static class Program {
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
 
         var lines = File.ReadAllLines(file);
-        int maxLength = lines.Select(l => l.Length).Max();
-
-        long target = lines.Sum(ConvertSnafu);
+        long target = lines.Sum(FromSnafu);
+        Console.WriteLine(ToSnafu(target));
 
         string code = "";
-        int carry = 0;
-        for (int i = 1; i <= maxLength; i++) {
-            int sum = carry;
-            carry = 0;
-            foreach (var line in lines) {
-                if (line.Length < i) {
-                    continue;
-                }
-
-                sum += FromDigit(line[^i]);
-            }
-
-            while (sum > 2) {
-                sum -= 5;
-                carry++;
-            }
-            while (sum < -2) {
-                sum += 5;
-                carry--;
-            }
-
-            code = ToDigit(sum) + code;
+        foreach (string line in lines) {
+            code = SumSnafu(code, line);
         }
-
-        Debug.Assert(target == ConvertSnafu(code), $"Calculated code is incorrect: {ConvertSnafu(code)}");
+        Debug.Assert(target == FromSnafu(code), $"Calculated code is incorrect: {FromSnafu(code)}");
         Console.WriteLine(code);
     }
 
+    private static string SumSnafu(string left, string right) {
+        int length = Math.Max(left.Length, right.Length);
+        var result = new StringBuilder();
+        long carry = 0;
+        for (int i = 1; i <= length; i++) {
+            long value = carry;
+            carry = 0;
+            if (left.Length >= i) {
+                value += FromDigit(left[^i]);
+            }
+            if (right.Length >= i) {
+                value += FromDigit(right[^i]);
+            }
 
-    private static long ConvertSnafu(string snafu) {
+
+            while (value > 2) {
+                value -= 5;
+                carry++;
+            }
+            while (value < -2) {
+                value += 5;
+                carry--;
+            }
+
+            result.Insert(0, ToDigit(value));
+        }
+
+        return result.ToString();
+    }
+
+    private static long FromSnafu(string snafu) {
         long number = 0;
         long place = 1;
         for (int i = snafu.Length - 1; i >= 0; i --) {
@@ -53,7 +61,22 @@ public static class Program {
         return number;
     }
 
-    private static int FromDigit(char digit) {
+    private static string ToSnafu(long number) {
+        var snafu = new StringBuilder();
+        while (number > 0) {
+            long value = PositiveMod(number + 2, 5) - 2;
+            snafu.Insert(0, ToDigit(value));
+            number = value switch {
+                -1 or -2 => number / 5 + 1,
+                0 or 1 or 2 => number / 5,
+                _ => throw new ArgumentException($"Invalid digit value: {value}"),
+            };
+        }
+
+        return snafu.ToString();
+    }
+
+    private static long FromDigit(char digit) {
         return digit switch {
             '=' => -2,
             '-' => -1,
@@ -64,7 +87,7 @@ public static class Program {
         };
     }
 
-    private static char ToDigit(int value) {
+    private static char ToDigit(long value) {
         return value switch {
             -2 => '=',
             -1 => '-',
@@ -73,5 +96,9 @@ public static class Program {
             2 => '2',
             _ => throw new ArgumentException($"Invalid value: {value}"),
         };
+    }
+
+    private static long PositiveMod(long value, int mod) {
+        return (value % mod + mod) % mod;
     }
 }
