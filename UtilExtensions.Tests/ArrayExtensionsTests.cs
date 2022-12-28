@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using NUnit.Framework;
 using QuikGraph;
 using QuikGraph.Algorithms;
@@ -106,11 +105,17 @@ public class ArrayExtensionsTests {
         array.SetColumn(0, new []{1, 2});
         Assert.AreEqual(new []{1, 2}, array.GetColumn(0));
         Assert.AreEqual(new []{0, 0}, array.GetColumn(1));
-        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(-1, Array.Empty<int>()));
+        Assert.AreEqual(new []{1, 2}, array.GetColumn(^4));
+        Assert.AreEqual(new []{0, 0}, array.GetColumn(^3));
+        Assert.Throws<ArgumentOutOfRangeException>(() => array.SetColumn(-1, Array.Empty<int>()));
         Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(4, Array.Empty<int>()));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(^0, Array.Empty<int>()));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetColumn(^5, Array.Empty<int>()));
         Assert.Throws<ArgumentException>(() => array.SetColumn(0, Array.Empty<int>()));
-        Assert.Throws<IndexOutOfRangeException>(() => array.GetColumn(-1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => array.GetColumn(-1));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetColumn(4));
+        Assert.Throws<IndexOutOfRangeException>(() => array.GetColumn(^0));
+        Assert.Throws<IndexOutOfRangeException>(() => array.GetColumn(^5));
     }
 
     [Test]
@@ -135,11 +140,17 @@ public class ArrayExtensionsTests {
         array.SetRow(0, new []{1, 2, 3, 4});
         Assert.AreEqual(new []{1, 2, 3, 4}, array.GetRow(0));
         Assert.AreEqual(new []{0, 0, 0, 0}, array.GetRow(1));
-        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(-1, Array.Empty<int>()));
+        Assert.AreEqual(new []{1, 2, 3, 4}, array.GetRow(^2));
+        Assert.AreEqual(new []{0, 0, 0, 0}, array.GetRow(^1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => array.SetRow(-1, Array.Empty<int>()));
         Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(2, Array.Empty<int>()));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(^0, Array.Empty<int>()));
+        Assert.Throws<IndexOutOfRangeException>(() => array.SetRow(^3, Array.Empty<int>()));
         Assert.Throws<ArgumentException>(() => array.SetRow(0, Array.Empty<int>()));
-        Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(-1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => array.GetRow(-1));
         Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(2));
+        Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(^0));
+        Assert.Throws<IndexOutOfRangeException>(() => array.GetRow(^3));
     }
 
     [Test]
@@ -157,24 +168,14 @@ public class ArrayExtensionsTests {
     }
 
     [Test]
-    public void CloneTest() {
+    public void CopyTest() {
         int[,] array = {
             {1, 2, 3},
             {4, 5, 6},
         };
 
-        Assert.AreEqual(array, array.Clone(0, 0));
-        Assert.Throws<IndexOutOfRangeException>(() => array.Clone(-1, 0));
-        Assert.Throws<IndexOutOfRangeException>(() => array.Clone(0, -1));
-        Assert.Throws<IndexOutOfRangeException>(() => array.Clone(0, 0, -1));
-        Assert.Throws<IndexOutOfRangeException>(() => array.Clone(0, 0, 0, -1));
-
-        int[,] clone1 = {
-            {1, 2},
-            {4, 5},
-        };
-        Assert.AreEqual(clone1, array.Clone(0, 0, 2, 2));
-        Assert.AreEqual(new [,]{{4, 5, 6}}, array.Clone(1, 0, 1, 3));
+        Assert.AreEqual(array, array.Copy());
+        Assert.False(ReferenceEquals(array, array.Copy()));
     }
 
     [Test]
@@ -250,6 +251,13 @@ public class ArrayExtensionsTests {
             {'n', 'o'},
         };
         Assert.AreEqual(result, array.Extract(1, 1, 3, 2));
+        Assert.AreEqual(result, array.Extract(1..4, 1..3));
+
+        Assert.AreEqual(array, array.Extract(0, 0));
+        Assert.Throws<IndexOutOfRangeException>(() => array.Extract(-1, 0));
+        Assert.Throws<IndexOutOfRangeException>(() => array.Extract(0, -1));
+        Assert.Throws<IndexOutOfRangeException>(() => array.Extract(0, 0, -1));
+        Assert.Throws<IndexOutOfRangeException>(() => array.Extract(0, 0, 0, -1));
     }
 
     [Test]

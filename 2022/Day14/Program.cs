@@ -19,8 +19,8 @@ public static class Program {
             DrawBarriers(grid, path);
         }
 
-        Console.WriteLine(Part1(grid.Clone()));
-        Console.WriteLine(Part2(grid.Clone()));
+        Console.WriteLine(Part1(grid.Copy()));
+        Console.WriteLine(Part2(grid.Copy()));
     }
 
     private static int Part1(DynamicMatrix<char> grid) {

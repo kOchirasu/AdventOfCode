@@ -162,19 +162,25 @@ public static class ArrayExtensions {
         return arr[row, col, dep];
     }
 
-    public static T[] GetColumn<T>(this T[,] arr, int col) {
-        int length = arr.GetLength(0);
+    public static T[] GetColumn<T>(this T[,] arr, Index index) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        int col = index.GetOffset(cols);
+        if (col < 0 || col >= cols) {
+            throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
+        }
 
-        var result = new T[length];
-        for (int i = 0; i < length; i++) {
+        var result = new T[rows];
+        for (int i = 0; i < rows; i++) {
             result[i] = arr[i, col];
         }
 
         return result;
     }
 
-    public static void SetColumn<T>(this T[,] arr, int col, T[] data) {
+    public static void SetColumn<T>(this T[,] arr, Index index, T[] data) {
         int cols = arr.ColumnCount();
+        int col = index.GetOffset(cols);
         if (col < 0 || col >= cols) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
         }
@@ -195,19 +201,25 @@ public static class ArrayExtensions {
         }
     }
 
-    public static T[] GetRow<T>(this T[,] arr, int row) {
-        int length = arr.GetLength(1);
+    public static T[] GetRow<T>(this T[,] arr, Index index) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        int row = index.GetOffset(rows);
+        if (row < 0 || row >= rows) {
+            throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
+        }
 
-        var result = new T[length];
-        for (int i = 0; i < length; i++) {
+        var result = new T[cols];
+        for (int i = 0; i < cols; i++) {
             result[i] = arr[row, i];
         }
 
         return result;
     }
 
-    public static void SetRow<T>(this T[,] arr, int row, T[] data) {
+    public static void SetRow<T>(this T[,] arr, Index index, T[] data) {
         int rows = arr.RowCount();
+        int row = index.GetOffset(rows);
         if (row < 0 || row >= rows) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative and less than the size of the collection");
         }
@@ -238,20 +250,13 @@ public static class ArrayExtensions {
         }
     }
 
-    public static T[,] Clone<T>(this T[,] arr, int row = 0, int col = 0, int rows = int.MaxValue, int cols = int.MaxValue) {
-        if (row < 0 || col < 0) {
-            throw new IndexOutOfRangeException("Index was out of range. Must be non-negative.");
-        }
-        if (rows < 0 || cols < 0) {
-            throw new IndexOutOfRangeException("Size was out of range. Must be non-negative.");
-        }
-        rows = Math.Min(arr.RowCount() - row, rows);
-        cols = Math.Min(arr.ColumnCount() - col, cols);
-
+    public static T[,] Copy<T>(this T[,] arr) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
         var result = new T[rows, cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                result[i, j] = arr[i + row, j + col];
+                result[i, j] = arr[i, j];
             }
         }
 
@@ -310,7 +315,16 @@ public static class ArrayExtensions {
         }
     }
 
-    public static T[,] Extract<T>(this T[,] arr, int row, int col, int rowCount, int colCount) {
+    public static T[,] Extract<T>(this T[,] arr, int row, int col, int rowCount = int.MaxValue, int colCount = int.MaxValue) {
+        if (row < 0 || col < 0) {
+            throw new IndexOutOfRangeException("Index was out of range. Must be non-negative.");
+        }
+        if (rowCount < 0 || colCount < 0) {
+            throw new IndexOutOfRangeException("Size was out of range. Must be non-negative.");
+        }
+        rowCount = Math.Min(arr.RowCount() - row, rowCount);
+        colCount = Math.Min(arr.ColumnCount() - col, colCount);
+
         var result = new T[rowCount, colCount];
         for (int i = row; i < row + rowCount; i++) {
             for (int j = col; j < col + colCount; j++) {
@@ -319,6 +333,12 @@ public static class ArrayExtensions {
         }
 
         return result;
+    }
+
+    public static T[,] Extract<T>(this T[,] arr, Range rows, Range cols) {
+        (int row, int rowCount) = rows.GetOffsetAndLength(arr.RowCount());
+        (int col, int colCount) = cols.GetOffsetAndLength(arr.ColumnCount());
+        return arr.Extract(row, col, rowCount, colCount);
     }
 
     public static T[,] Rotate<T>(this T[,] arr, int n = 1) {

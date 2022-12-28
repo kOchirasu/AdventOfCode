@@ -60,8 +60,8 @@ public sealed class DynamicMatrix<T> : IEnumerable<T> {
         return Value.GetColumn(col + offsetCol);
     }
 
-    public DynamicMatrix<T> Clone() {
-        return new DynamicMatrix<T>(Value.Clone(0), Default, expandOnAccess) {
+    public DynamicMatrix<T> Copy() {
+        return new DynamicMatrix<T>(Value.Copy(), Default, expandOnAccess) {
             offsetRow = offsetRow,
             offsetCol = offsetCol,
         };

@@ -48,7 +48,7 @@ public class DynamicMatrixTests {
     [Test]
     public void CloneTest() {
         var matrix = new DynamicMatrix<int>(2, 3);
-        DynamicMatrix<int> clone = matrix.Clone();
+        DynamicMatrix<int> clone = matrix.Copy();
         Assert.AreEqual(matrix, clone);
 
         clone[0, 0] = 1;

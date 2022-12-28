@@ -19,9 +19,9 @@ public static class Program {
         var matrix = File.ReadAllLines(file).CharMatrix();
         var grid = new DynamicMatrix<char>(matrix, @default: '.', expandOnAccess: true);
 
-        Console.WriteLine(Part1(grid.Clone()));
+        Console.WriteLine(Part1(grid.Copy()));
         // Console.WriteLine(Part1BoundingBox(grid.Clone()));
-        Console.WriteLine(Part2(grid.Clone()));
+        Console.WriteLine(Part2(grid.Copy()));
     }
 
     private static int Part1(DynamicMatrix<char> grid) {
