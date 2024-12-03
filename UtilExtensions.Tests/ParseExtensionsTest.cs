@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -89,6 +90,30 @@ public class ParseExtensionsTest {
     [TestCase("  Starting items: 95, 89, 63, 67", @"(?:(\d+)[ ,]{0,2})+", new []{"95", "89", "63", "67"})]
     public void ExtractTest(string input, [RegexPattern] string pattern, string[] expected) {
         Assert.AreEqual(expected, input.Extract(pattern));
+    }
+
+    [Test]
+    public void ExtractAllTest() {
+        const string text = """
+                            Special *words* are *surrounded* by an *astrix*
+                            so *if* you find these words, you should *extract* them
+                            """;
+
+        var expected = new List<string[]> {
+            new []{"words"},
+            new []{"surrounded"},
+            new []{"astrix"},
+            new []{"if"},
+            new []{"extract"},
+        };
+        Assert.AreEqual(expected, text.ExtractAll(@"\*(.+?)\*"));
+    }
+
+    [Test]
+    [TestCase("test(1, 3) blah test(3, 4)", @"test\((\d+), (\d+)\)", "$1 $2", new []{"1 3", "3 4"})]
+    [TestCase("a1b2c3", @"\w(\d)", "$&", new []{"a1", "b2", "c3"})]
+    public void ExtractFormatTest(string input, [RegexPattern] string pattern, string format, string[] expected) {
+        Assert.AreEqual(expected, input.ExtractFormat(pattern, format));
     }
 
     [Test]

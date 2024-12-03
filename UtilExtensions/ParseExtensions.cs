@@ -52,7 +52,26 @@ public static class ParseExtensions {
 
     public static string[] Extract(this string str, [RegexPattern] string pattern) {
         Match match = Regex.Match(str, pattern);
-        return match.Groups.SelectMany(group => group.Captures.Select(capture => capture.Value)).Skip(1).ToArray();
+        return match.Groups.SelectMany(group => group.Captures.Select(capture => capture.Value))
+            .Skip(1)
+            .ToArray();
+    }
+
+    public static List<string[]> ExtractAll(this string str, [RegexPattern] string pattern) {
+        MatchCollection matches = Regex.Matches(str, pattern);
+
+        return matches.Select(match =>
+            match.Groups.SelectMany(group => group.Captures.Select(capture => capture.Value))
+                .Skip(1)
+                .ToArray()
+        ).ToList();
+    }
+
+    public static string[] ExtractFormat(this string str, [RegexPattern] string pattern, string format) {
+        var regex = new Regex(pattern);
+        MatchCollection matches = regex.Matches(str);
+
+        return matches.Select(match => regex.Replace(match.Value, format)).ToArray();
     }
 
     public static int[] IntList(this string str) {

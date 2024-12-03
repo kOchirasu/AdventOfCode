@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using UtilExtensions;
 
 namespace Day3;
 
@@ -14,8 +15,8 @@ public static class Program {
     }
 
     private static int Part1(string code) {
-        return Regex.Matches(code, @"mul\((\d{1,3}),(\d{1,3})\)")
-            .Select(match => int.Parse(match.Groups[1].Value) * int.Parse(match.Groups[2].Value))
+        return code.ExtractAll(@"mul\((\d{1,3}),(\d{1,3})\)")
+            .Select(args => args.Select(int.Parse).Aggregate((a, b) => a * b))
             .Sum();
     }
 
@@ -23,8 +24,8 @@ public static class Program {
         code = code.ReplaceLineEndings(""); // Convert to single line
         code = Regex.Replace(code, @"don't\(\).*?do\(\)", "");
 
-        return Regex.Matches(code, @"mul\((\d{1,3}),(\d{1,3})\)")
-            .Select(match => int.Parse(match.Groups[1].Value) * int.Parse(match.Groups[2].Value))
+        return code.ExtractAll(@"mul\((\d{1,3}),(\d{1,3})\)")
+            .Select(args => args.Select(int.Parse).Aggregate((a, b) => a * b))
             .Sum();
     }
 }
