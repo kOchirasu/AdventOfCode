@@ -168,14 +168,45 @@ public class ArrayExtensionsTests {
     }
 
     [Test]
+    public void ConvertArrayTest() {
+        string[] integers = {"12", "34", "-56", "0"};
+        string[] floats = {"1.2", "34", "-5.6", "0"};
+
+        Assert.AreEqual(integers.Convert<int>(), new[] {12, 34, -56, 0});
+        Assert.AreEqual(integers.Convert<long>(), new[] {12L, 34L, -56L, 0L});
+        Assert.AreEqual(floats.Convert<float>(), new[] {1.2f, 34f, -5.6f, 0f});
+        Assert.AreEqual(floats.Convert<double>(), new[] {1.2, 34, -5.6, 0});
+    }
+
+    [Test]
+    public void ConvertArray2dTest() {
+        string[,] integers = {
+            {"12", "34"},
+            {"-56", "0"},
+        };
+        string[,] floats = {
+            {"1.2", "34"},
+            {"-5.6", "0"},
+        };
+
+        Assert.AreEqual(integers.Convert<int>(), new[,] {{12, 34}, {-56, 0}});
+        Assert.AreEqual(integers.Convert<long>(), new[,] {{12L, 34L}, {-56L, 0L}});
+        Assert.AreEqual(floats.Convert<float>(), new[,] {{1.2f, 34f}, {-5.6f, 0f}});
+        Assert.AreEqual(floats.Convert<double>(), new[,] {{1.2, 34}, {-5.6, 0}});
+    }
+
+    [Test]
     public void CopyTest() {
-        int[,] array = {
+        int[] array1d = {1, 2, 3, 4};
+        int[,] array2d = {
             {1, 2, 3},
             {4, 5, 6},
         };
 
-        Assert.AreEqual(array, array.Copy());
-        Assert.False(ReferenceEquals(array, array.Copy()));
+        Assert.AreEqual(array1d, array1d.Copy());
+        Assert.False(ReferenceEquals(array1d, array1d.Copy()));
+        Assert.AreEqual(array2d, array2d.Copy());
+        Assert.False(ReferenceEquals(array2d, array2d.Copy()));
     }
 
     [Test]

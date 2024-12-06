@@ -90,6 +90,7 @@ public class ParseExtensionsTest {
     [TestCase("  Starting items: 95, 89, 63, 67", @"(?:(\d+)[ ,]{0,2})+", new []{"95", "89", "63", "67"})]
     public void ExtractTest(string input, [RegexPattern] string pattern, string[] expected) {
         Assert.AreEqual(expected, input.Extract(pattern));
+        Assert.AreEqual(expected, input.Extract<string>(pattern));
     }
 
     [Test]
@@ -107,6 +108,16 @@ public class ParseExtensionsTest {
             new []{"extract"},
         };
         Assert.AreEqual(expected, text.ExtractAll(@"\*(.+?)\*"));
+
+        const string numbers = "this is 45 numbers with 23 test 99 or 0";
+        var expectedNumbers = new List<int[]> {
+            new[] {45},
+            new[] {23},
+            new[] {99},
+            new[] {0},
+        };
+
+        Assert.AreEqual(expectedNumbers, numbers.ExtractAll<int>(@"(\d+)"));
     }
 
     [Test]

@@ -11,12 +11,12 @@ public static class Program {
 
         string[] groups = File.ReadAllText(file).Groups(trim: true);
 
-        List<(int, int)> rules = groups[0].ExtractAll(@"(\d+)\|(\d+)")
-            .Select(r => (int.Parse(r[0]), int.Parse(r[1])))
+        List<(int, int)> rules = groups[0].ExtractAll<int>(@"(\d+)\|(\d+)")
+            .Select(r => (r[0], r[1]))
             .ToList();
 
         List<int[]> updates = groups[1].StringList()
-            .Select(str => str.Split(",").Select(int.Parse).ToArray())
+            .Select(str => str.Split(",").Convert<int>().ToArray())
             .ToList();
 
         Console.WriteLine(Part1(rules, updates));

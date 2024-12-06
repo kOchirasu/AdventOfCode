@@ -51,18 +51,28 @@ public static class ParseExtensions {
     }
 
     public static string[] Extract(this string str, [RegexPattern] string pattern) {
+        return str.Extract<string>(pattern);
+    }
+
+    public static T[] Extract<T>(this string str, [RegexPattern] string pattern) where T : IConvertible {
         Match match = Regex.Match(str, pattern);
         return match.Groups.SelectMany(group => group.Captures.Select(capture => capture.Value))
             .Skip(1)
+            .Convert<T>()
             .ToArray();
     }
 
     public static List<string[]> ExtractAll(this string str, [RegexPattern] string pattern) {
+        return str.ExtractAll<string>(pattern);
+    }
+
+    public static List<T[]> ExtractAll<T>(this string str, [RegexPattern] string pattern) where T : IConvertible {
         MatchCollection matches = Regex.Matches(str, pattern);
 
         return matches.Select(match =>
             match.Groups.SelectMany(group => group.Captures.Select(capture => capture.Value))
                 .Skip(1)
+                .Convert<T>()
                 .ToArray()
         ).ToList();
     }

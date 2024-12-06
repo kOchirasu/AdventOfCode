@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using QuikGraph;
 
@@ -254,6 +256,14 @@ public static class ArrayExtensions {
         }
     }
 
+    public static IEnumerable<T> Convert<T>(this IEnumerable<string> arr) where T : IConvertible {
+        return arr.Select(i => (T) System.Convert.ChangeType(i, typeof(T)));
+    }
+
+    public static T[,] Convert<T>(this string[,] arr) where T : IConvertible {
+        return arr.Select(i => (T) System.Convert.ChangeType(i, typeof(T)));
+    }
+
     public static void Fill<T>(this T[,] arr, T value) {
         int rows = arr.RowCount();
         int cols = arr.ColumnCount();
@@ -262,6 +272,13 @@ public static class ArrayExtensions {
                 arr[i, j] = value;
             }
         }
+    }
+
+    public static T[] Copy<T>(this T[] arr) {
+        var result = new T[arr.Length];
+        Array.Copy(arr, result, arr.Length);
+
+        return result;
     }
 
     public static T[,] Copy<T>(this T[,] arr) {
