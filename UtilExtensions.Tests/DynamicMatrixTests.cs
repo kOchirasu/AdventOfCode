@@ -274,7 +274,7 @@ public class DynamicMatrixTests {
         CollectionAssert.AreEquivalent(new []{(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)},
             matrix.Adjacent(0, 0, Directions.All));
         CollectionAssert.AreEquivalent(new []{(-1, 1), (0, -1), (0, 0), (1, 1)},
-            matrix.Adjacent(0, 1, Directions.Cardinal | Directions.Wrap));
+            matrix.Adjacent(0, 1, Directions.Cardinal, AdjacencyOptions.Wrap));
 
         CollectionAssert.AreEquivalent(new []{(0, 0)}, matrix.Adjacent(0, 0, Directions.Origin));
         CollectionAssert.AreEquivalent(new []{(-1, 0)}, matrix.Adjacent(0, 0, Directions.N));

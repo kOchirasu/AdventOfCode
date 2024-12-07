@@ -30,20 +30,15 @@ public static class Program {
             return 0;
         }
 
-        Directions[] dirs = [
-            Directions.N, Directions.S, Directions.E, Directions.W,
-            Directions.NE, Directions.SE, Directions.SW, Directions.NW,
-        ];
-
         int sum = 0;
-        foreach (Directions dir in dirs) {
-            (int mR, int mC) = input.Adjacent(xR, xC, dir).SingleOrDefault((-1, -1));
+        foreach (Direction dir in Directions.All.Enumerate()) {
+            (int mR, int mC) = input.Adjacent(xR, xC, dir);
             if (!input.TryGet(mR, mC, out char m) || m != 'M') continue;
 
-            (int aR, int aC) = input.Adjacent(mR, mC, dir).SingleOrDefault((-1, -1));
+            (int aR, int aC) = input.Adjacent(mR, mC, dir);
             if (!input.TryGet(aR, aC, out char a) || a != 'A') continue;
 
-            (int sR, int sC) = input.Adjacent(aR, aC, dir).SingleOrDefault((-1, -1));
+            (int sR, int sC) = input.Adjacent(aR, aC, dir);
             if (!input.TryGet(sR, sC, out char s) || s != 'S') continue;
 
             sum++;
@@ -68,11 +63,11 @@ public static class Program {
             return 0;
         }
 
-        (int dX, int dY) = Directions.NE.Deltas().Single();
-        string cross1 = string.Join("", input.ExtractLine(r + dX, c + dY, Directions.NE.Reverse(), 3).SingleOrDefault([]));
+        (int dX, int dY) = Direction.NE.Delta();
+        string cross1 = string.Join("", input.ExtractLine(r + dX, c + dY, Direction.NE.Rotate(180), 3));
 
-        (dX, dY) = Directions.NW.Deltas().Single();
-        string cross2 = string.Join("", input.ExtractLine(r + dX, c + dY, Directions.NW.Reverse(), 3).SingleOrDefault([]));
+        (dX, dY) = Direction.NW.Delta();
+        string cross2 = string.Join("", input.ExtractLine(r + dX, c + dY, Direction.NW.Rotate(180), 3));
 
         return (cross1 is "MAS" or "SAM") && (cross2 is "MAS" or "SAM") ? 1 : 0;
     }

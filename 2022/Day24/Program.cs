@@ -47,11 +47,11 @@ public static class Program {
     }
 
     private static readonly List<Tile[,]> MinuteGrids = new();
-    private static readonly Dictionary<Tile, Directions> Movements = new() {
-        {Tile.North, Directions.N},
-        {Tile.South, Directions.S},
-        {Tile.East, Directions.E},
-        {Tile.West, Directions.W},
+    private static readonly Dictionary<Tile, Direction> Movements = new() {
+        {Tile.North, Direction.N},
+        {Tile.South, Direction.S},
+        {Tile.East, Direction.E},
+        {Tile.West, Direction.W},
     };
     private static Tile[,] GetGrid(int minute) {
         if (minute < MinuteGrids.Count) {
@@ -69,11 +69,11 @@ public static class Program {
                     continue;
                 }
 
-                foreach ((Tile blizzard, Directions direction) in Movements) {
+                foreach ((Tile blizzard, Direction direction) in Movements) {
                     if ((tile & blizzard) != 0) {
                         (int r, int c) pos = (r, c);
                         do {
-                            pos = prev.Adjacent(pos.r, pos.c, direction | Directions.Wrap).First();
+                            pos = prev.Adjacent(pos.r, pos.c, direction, AdjacencyOptions.Wrap);
                         } while (prev[pos.r, pos.c] == Tile.Wall);
 
                         next[pos.r, pos.c] |= blizzard;

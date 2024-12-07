@@ -168,11 +168,16 @@ public sealed class DynamicMatrix<T> : IEnumerable<T> {
         };
     }
 
-    public IEnumerable<(int, int)> Adjacent(int row, int col, Directions dir) {
+    public IEnumerable<(int, int)> Adjacent(int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
         (int normalizeRow, int normalizeCol) = Normalize(row, col);
-        foreach ((int r, int c) in Value.Adjacent(normalizeRow, normalizeCol, dir)) {
+        foreach ((int r, int c) in Value.Adjacent(normalizeRow, normalizeCol, dir, options)) {
             yield return (r - offsetRow, c - offsetCol);
         }
+    }
+
+    public (int, int) Adjacent(int row, int col, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        (int normalizeRow, int normalizeCol) = Normalize(row, col);
+        return Value.Adjacent(normalizeRow, normalizeCol, dir, options);
     }
 
     public IEnumerable<(int Row, int Col)> Find(T value) {

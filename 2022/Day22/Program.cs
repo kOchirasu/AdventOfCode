@@ -25,14 +25,14 @@ public static class Program {
     private static int Part1(char[,] grid, PathReader path) {
         path.Reset();
         (int row, int col) = (0, Array.IndexOf(grid.GetRow(0), '.'));
-        var direction = Directions.E;
+        var direction = Direction.E;
 
         while (path.Remaining > 0) {
             if (path.NextInt(out int distance)) {
                 (int nextRow, int nextCol) = (row, col);
                 for (int j = 0; j < distance; j++) {
                     do {
-                        (nextRow, nextCol) = grid.Adjacent(nextRow, nextCol, direction | Directions.Wrap).First();
+                        (nextRow, nextCol) = grid.Adjacent(nextRow, nextCol, direction, AdjacencyOptions.Wrap);
                     } while (grid[nextRow, nextCol] == ' ');
 
                     if (grid[nextRow, nextCol] == '#') {
@@ -43,15 +43,15 @@ public static class Program {
             }
 
             if (path.NextRotation(out char rotation)) {
-                direction = Rotate(direction, rotation == 'R' ? 1 : -1);
+                direction = direction.Rotate(rotation == 'R' ? 90 : -90);
             }
         }
 
         return (row + 1) * 1000 + (col + 1) * 4 + direction switch {
-            Directions.E => 0,
-            Directions.S => 1,
-            Directions.W => 2,
-            Directions.N => 3,
+            Direction.E => 0,
+            Direction.S => 1,
+            Direction.W => 2,
+            Direction.N => 3,
             _ => throw new ArgumentException("Invalid direction"),
         };
     }
@@ -59,23 +59,23 @@ public static class Program {
     private static int Part2(char[,] grid, PathReader path) {
         path.Reset();
         (int row, int col) = (0, Array.IndexOf(grid.GetRow(0), '.'));
-        var direction = Directions.E;
+        var direction = Direction.E;
 
         while (path.Remaining > 0) {
             if (path.NextInt(out int distance)) {
                 (int nextRow, int nextCol) = (row, col);
-                Directions nextDirection = direction;
+                Direction nextDirection = direction;
                 for (int j = 0; j < distance; j++) {
-                    (int dR, int dC) = direction.Deltas().First();
+                    (int dR, int dC) = direction.Delta();
                     (nextRow, nextCol) = (nextRow + dR, nextCol + dC);
                     if (!grid.TryGet(nextRow, nextCol, out char val) || val != '.') {
                         switch (nextDirection) {
-                            case Directions.N:
-                            case Directions.S:
+                            case Direction.N:
+                            case Direction.S:
                                 (nextRow, nextCol, nextDirection) = WrapRow(nextRow, nextCol, nextDirection);
                                 break;
-                            case Directions.E:
-                            case Directions.W:
+                            case Direction.E:
+                            case Direction.W:
                                 (nextRow, nextCol, nextDirection) = WrapCol(nextRow, nextCol, nextDirection);
                                 break;
                         }
@@ -99,20 +99,20 @@ public static class Program {
             const int dim2 = Dimensions * 2;
             const int dim3 = Dimensions * 3;
             const int dim4 = Dimensions * 4;
-            (int, int, Directions) WrapRow(int r, int c, Directions d) {
+            (int, int, Direction) WrapRow(int r, int c, Direction d) {
                 return c switch {
                     >= 0 and < dim1 => r switch {
-                        < dim2 => (c + dim1, dim1, d.Rotate(1)),
+                        < dim2 => (c + dim1, dim1, d.Rotate(90)),
                         >= dim4 => (0, c + dim2, d),
                         _ => (r, c, d),
                     },
                     >= dim1 and < dim2 => r switch {
-                        >= dim3 => (c + dim2, dim1 - 1, d.Rotate(1)),
-                        < 0 => (c + dim2, 0, d.Rotate(1)),
+                        >= dim3 => (c + dim2, dim1 - 1, d.Rotate(90)),
+                        < 0 => (c + dim2, 0, d.Rotate(90)),
                         _ => (r, c, d),
                     },
                     >= dim2 and < dim3 => r switch {
-                        >= dim1 => (c - dim1, dim2 - 1, d.Rotate(1)),
+                        >= dim1 => (c - dim1, dim2 - 1, d.Rotate(90)),
                         < 0 => (dim4 - 1, c - dim2, d),
                         _ => (r, c, d),
                     },
@@ -120,26 +120,26 @@ public static class Program {
                 };
             }
 
-            (int, int, Directions) WrapCol(int r, int c, Directions d) {
+            (int, int, Direction) WrapCol(int r, int c, Direction d) {
                 return r switch {
                     >= 0 and < dim1 => c switch {
-                        < dim1 => (dim3 - 1 - r, 0, d.Rotate(2)),
-                        >= dim3 => (dim3 - 1 - r, dim2 - 1, d.Rotate(2)),
+                        < dim1 => (dim3 - 1 - r, 0, d.Rotate(180)),
+                        >= dim3 => (dim3 - 1 - r, dim2 - 1, d.Rotate(180)),
                         _ => (r, c, d),
                     },
                     >= dim1 and < dim2 => c switch {
-                        >= dim2 => (dim1 - 1, r + dim1, d.Rotate(-1)),
-                        < dim1 => (dim2, r - dim1, d.Rotate(-1)),
+                        >= dim2 => (dim1 - 1, r + dim1, d.Rotate(-90)),
+                        < dim1 => (dim2, r - dim1, d.Rotate(-90)),
                         _ => (r, c, d),
                     },
                     >= dim2 and < dim3 => c switch {
-                        >= dim2 => (dim3 - 1 - r, dim3 - 1, d.Rotate(2)),
-                        < 0 => (dim3 - 1 - r, dim1, d.Rotate(2)),
+                        >= dim2 => (dim3 - 1 - r, dim3 - 1, d.Rotate(180)),
+                        < 0 => (dim3 - 1 - r, dim1, d.Rotate(180)),
                         _ => (r, c, d),
                     },
                     >= dim3 and < dim4 => c switch {
-                        >= dim1 => (dim3 - 1, r - dim2, d.Rotate(-1)),
-                        < 0 => (0, r - dim2, d.Rotate(-1)),
+                        >= dim1 => (dim3 - 1, r - dim2, d.Rotate(-90)),
+                        < 0 => (0, r - dim2, d.Rotate(-90)),
                         _ => (r, c, d),
                     },
                     _ => (r, c, d),
@@ -148,26 +148,11 @@ public static class Program {
         }
 
         return (row + 1) * 1000 + (col + 1) * 4 + direction switch {
-            Directions.E => 0,
-            Directions.S => 1,
-            Directions.W => 2,
-            Directions.N => 3,
+            Direction.E => 0,
+            Direction.S => 1,
+            Direction.W => 2,
+            Direction.N => 3,
             _ => throw new ArgumentException("Invalid direction"),
         };
-    }
-
-    private static Directions Rotate(this Directions current, int rotations) {
-        rotations = (rotations + 4) % 4;
-        for (int i = 0; i < rotations; i++) {
-            current = current switch {
-                Directions.N => Directions.E,
-                Directions.E => Directions.S,
-                Directions.S => Directions.W,
-                Directions.W => Directions.N,
-                _ => throw new ArgumentException($"Invalid direction: {current}"),
-            };
-        }
-
-        return current;
     }
 }

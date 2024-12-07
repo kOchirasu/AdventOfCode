@@ -50,13 +50,13 @@ namespace Day13 {
             char[,] a, b;
             switch (axis) {
                 case Axis.Vertical: { // X
-                    a = grid.Clone(0, 0, fold, grid.ColumnCount());
-                    b = grid.Clone(fold + 1, 0, fold, grid.ColumnCount()).Reflect(axis);
+                    a = grid.Extract(0, 0, fold, grid.ColumnCount());
+                    b = grid.Extract(fold + 1, 0, fold, grid.ColumnCount()).Reflect(axis);
                     break;
                 }
                 case Axis.Horizontal: { // Y
-                    a = grid.Clone(0, 0, grid.RowCount(), fold);
-                    b = grid.Clone(0, fold + 1, grid.RowCount(), fold).Reflect(axis);
+                    a = grid.Extract(0, 0, grid.RowCount(), fold);
+                    b = grid.Extract(0, fold + 1, grid.RowCount(), fold).Reflect(axis);
                     break;
                 }
                 default:
@@ -78,13 +78,13 @@ namespace Day13 {
                 char[,] a, b;
                 switch (axis) {
                     case Axis.Vertical: { // X
-                        a = grid.Clone(0, 0, fold, grid.ColumnCount());
-                        b = grid.Clone(fold + 1, 0, fold, grid.ColumnCount()).Reflect(axis);
+                        a = grid.Extract(0, 0, fold, grid.ColumnCount());
+                        b = grid.Extract(fold + 1, 0, fold, grid.ColumnCount()).Reflect(axis);
                         break;
                     }
                     case Axis.Horizontal: { // Y
-                        a = grid.Clone(0, 0, grid.RowCount(), fold);
-                        b = grid.Clone(0, fold + 1, grid.RowCount(), fold).Reflect(axis);
+                        a = grid.Extract(0, 0, grid.RowCount(), fold);
+                        b = grid.Extract(0, fold + 1, grid.RowCount(), fold).Reflect(axis);
                         break;
                     }
                     default:

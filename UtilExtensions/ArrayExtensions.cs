@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using QuikGraph;
 
@@ -15,8 +14,7 @@ public static class ArrayExtensions {
         Vertical,
     }
 
-    [Flags]
-    public enum Directions {
+    public enum Direction {
         Origin = 1,
         N = 2,
         E = 4,
@@ -26,40 +24,53 @@ public static class ArrayExtensions {
         SE = 64,
         SW = 128,
         NW = 256,
-        Wrap = 512,
-        Expand = 1024,
+    }
+
+    [Flags]
+    public enum Directions {
+        Origin = Direction.Origin,
+        N = Direction.N,
+        E = Direction.E,
+        S = Direction.S,
+        W = Direction.W,
+        NE = Direction.NE,
+        SE = Direction.SE,
+        SW = Direction.SW,
+        NW = Direction.NW,
 
         Cardinal = N | E | S | W,
         Intermediate = NE | SE | SW | NW,
         All = Cardinal | Intermediate,
     }
 
-    private static readonly (Directions, int, int)[] Offsets = {
-        (Directions.N, -1, 0),
-        (Directions.E, 0, 1),
-        (Directions.S, 1, 0),
-        (Directions.W, 0, -1),
-        (Directions.NE, -1, 1),
-        (Directions.SE, 1, 1),
-        (Directions.SW, 1, -1),
-        (Directions.NW, -1, -1),
+    [Flags]
+    public enum AdjacencyOptions {
+        None = 0,
+        Wrap = 1,
+        Expand = 2,
+    }
+
+    private static readonly Dictionary<Direction, (int, int)> Offsets = new() {
+        {Direction.Origin, (0, 0)},
+        {Direction.N, (-1, 0)},
+        {Direction.E, (0, 1)},
+        {Direction.S, (1, 0)},
+        {Direction.W, (0, -1)},
+        {Direction.NE, (-1, 1)},
+        {Direction.SE, (1, 1)},
+        {Direction.SW, (1, -1)},
+        {Direction.NW, (-1, -1)},
     };
 
-    private static readonly Dictionary<Directions, Directions> Reversed = new() {
-        {Directions.Origin, Directions.Origin},
-        {Directions.N, Directions.S},
-        {Directions.E, Directions.W},
-        {Directions.S, Directions.N},
-        {Directions.W, Directions.E},
-        {Directions.NE, Directions.SW},
-        {Directions.SE, Directions.NW},
-        {Directions.SW, Directions.NE},
-        {Directions.NW, Directions.SE},
-        {Directions.Wrap, Directions.Wrap},
-        {Directions.Expand, Directions.Expand},
+    private static readonly Direction[] Rotations = {
+        Direction.N, Direction.NE, Direction.E, Direction.SE,
+        Direction.S, Direction.SW, Direction.W, Direction.NW,
     };
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int RowCount<T>(this T[,] arr) => arr.GetLength(0);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int ColumnCount<T>(this T[,] arr) => arr.GetLength(1);
 
     public static bool TryGet<T>(this T[] arr, int n, [MaybeNullWhen(false)] out T value) {
@@ -373,28 +384,32 @@ public static class ArrayExtensions {
     }
 
     public static IEnumerable<T[]> ExtractLine<T>(this T[,] arr, int row, int col, Directions dirs, int length) {
-        if (row < 0 || col < 0) {
-            yield break;
-        }
-
-        foreach (Directions dir in (dirs & Directions.All).Enumerate()) {
-            (int dX, int dY) = dir.Deltas().Single();
-
-            var result = new T[length];
-            bool ok = true;
-            for (int i = 0; i < length; i++) {
-                if (!arr.TryGet(row + dX * i, col + dY * i, out T? value)) {
-                    ok = false;
-                    break;
-                }
-
-                result[i] = value;
-            }
-
-            if (ok) {
+        foreach (Direction dir in dirs.Enumerate()) {
+            var result = arr.ExtractLine(row, col, dir, length);
+            if (result.Length > 0) {
                 yield return result;
             }
         }
+    }
+
+    public static T[] ExtractLine<T>(this T[,] arr, int row, int col, Direction dir, int length) {
+        if (row < 0 || col < 0 || dir == Direction.Origin || length == 0) {
+            return Array.Empty<T>();
+        }
+
+        (int dX, int dY) = dir.Delta();
+        var result = new T[length];
+        bool ok = true;
+        for (int i = 0; i < length; i++) {
+            if (!arr.TryGet(row + dX * i, col + dY * i, out T? value)) {
+                ok = false;
+                break;
+            }
+
+            result[i] = value;
+        }
+
+        return ok ? result : Array.Empty<T>();
     }
 
     public static T[,] Rotate<T>(this T[,] arr, int n = 1) {
@@ -444,49 +459,70 @@ public static class ArrayExtensions {
         }
     }
 
-    public static IEnumerable<Directions> Enumerate(this Directions dir) {
-        foreach (Directions d in Reversed.Keys) {
-            if (dir.HasFlag(d)) {
+    public static IEnumerable<Direction> Enumerate(this Directions dir) {
+        foreach (Direction d in Offsets.Keys) {
+            if (dir.HasFlag((Directions) d)) {
                 yield return d;
             }
         }
     }
 
     public static IEnumerable<(int, int)> Deltas(this Directions dir) {
-        foreach ((Directions d, int dX, int dY) in Offsets) {
-            if ((dir & d) == 0) continue;
-
-            yield return (dX, dY);
-        }
+        return dir.Enumerate()
+            .Select(d => Offsets[d]);
     }
 
-    public static Directions Reverse(this Directions dir) {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static (int, int) Delta(this Direction dir) {
+        return Offsets[dir];
+    }
+
+    public static Directions Rotate(this Directions dir, int degrees) {
         return dir.Enumerate()
-            .Select(d => Reversed[d])
+            .Select(d => (Directions) d.Rotate(degrees))
             .Aggregate((a, b) => a | b);
     }
 
-    public static IEnumerable<(int, int)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir) {
-        if ((dir & Directions.Origin) != 0) {
-            yield return (row, col);
+    public static Direction Rotate(this Direction dir, int degrees) {
+        if (degrees % 45 != 0) {
+            throw new ArgumentException("Rotation must be a multiple of 45");
+        }
+        if (dir == Direction.Origin) {
+            return Direction.Origin;
         }
 
-        int rows = arr.RowCount();
-        int cols = arr.ColumnCount();
-        bool wrap = (dir & Directions.Wrap) != 0;
-        bool expand = (dir & Directions.Expand) != 0;
-        foreach ((int dX, int dY) in dir.Deltas()) {
-            int r = row + dX;
-            int c = col + dY;
-            if (wrap) {
-                r = (r + rows) % rows;
-                c = (c + cols) % cols;
-            }
-
-            if (arr.TryGet(r, c, out T? _) || expand) {
-                yield return (r, c);
-            }
+        int index = Array.IndexOf(Rotations, dir);
+        if (index == -1) {
+            throw new ArgumentException($"Invalid direction: {dir}");
         }
+
+        int steps = (degrees % 360 + 360) % 360 / 45;
+        return Rotations[(index + steps) % Rotations.Length];
+    }
+
+    public static IEnumerable<(int, int)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        return dir.Enumerate()
+            .Select(d => arr.Adjacent(row, col, d, options))
+            .Where(coord => coord != (-1, -1));
+    }
+
+    public static (int, int) Adjacent<T>(this T[,] arr, int row, int col, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        (int dX, int dY) = dir.Delta();
+        int r = row + dX;
+        int c = col + dY;
+        if (options.HasFlag(AdjacencyOptions.Wrap)) {
+            int rows = arr.RowCount();
+            r = (r + rows) % rows;
+
+            int cols = arr.ColumnCount();
+            c = (c + cols) % cols;
+        }
+
+        if (arr.TryGet(r, c, out T? _) || options.HasFlag(AdjacencyOptions.Expand)) {
+            return (r, c);
+        }
+
+        return (-1, -1);
     }
 
     public static TR[,] Select<T, TR>(this T[,] items, Func<T, TR> f) {

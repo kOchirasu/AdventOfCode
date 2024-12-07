@@ -6,11 +6,11 @@ namespace Day23;
 
 // https://adventofcode.com/
 public static class Program {
-    private static readonly (Directions Check, Directions Direction)[] Rules = {
-        (Directions.N | Directions.NE | Directions.NW, Directions.N),
-        (Directions.S | Directions.SE | Directions.SW, Directions.S),
-        (Directions.W | Directions.NW | Directions.SW, Directions.W),
-        (Directions.E | Directions.NE | Directions.SE, Directions.E),
+    private static readonly (Directions Check, Direction Direction)[] Rules = {
+        (Directions.N | Directions.NE | Directions.NW, Direction.N),
+        (Directions.S | Directions.SE | Directions.SW, Direction.S),
+        (Directions.W | Directions.NW | Directions.SW, Direction.W),
+        (Directions.E | Directions.NE | Directions.SE, Direction.E),
     };
 
     public static void Main() {
@@ -58,9 +58,9 @@ public static class Program {
             }
 
             for (int i = 0; i < 4; i++) {
-                (Directions Check, Directions Direction) rule = Rules[(iteration + i) % 4];
+                (Directions Check, Direction Direction) rule = Rules[(iteration + i) % 4];
                 if (grid.Adjacent(elf.r, elf.c, rule.Check).All(p => grid[p.Item1, p.Item2] == '.')) {
-                    (int, int) target = grid.Adjacent(elf.r, elf.c, rule.Direction | Directions.Expand).Single();
+                    (int, int) target = grid.Adjacent(elf.r, elf.c, rule.Direction, AdjacencyOptions.Expand);
                     moves[target].Add(elf);
                     break;
                 }

@@ -353,7 +353,7 @@ public class ArrayExtensionsTests {
         CollectionAssert.AreEquivalent(new []{(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)},
             array.Adjacent(1, 1, Directions.All));
         CollectionAssert.AreEquivalent(new []{(0, 2), (1, 0), (1, 1), (2, 2)},
-            array.Adjacent(1, 2, Directions.Cardinal | Directions.Wrap));
+            array.Adjacent(1, 2, Directions.Cardinal, AdjacencyOptions.Wrap));
 
         CollectionAssert.AreEquivalent(new []{(1, 1)}, array.Adjacent(1, 1, Directions.Origin));
         CollectionAssert.AreEquivalent(new []{(0, 1)}, array.Adjacent(1, 1, Directions.N));
@@ -364,6 +364,18 @@ public class ArrayExtensionsTests {
         CollectionAssert.AreEquivalent(new []{(2, 2)}, array.Adjacent(1, 1, Directions.SE));
         CollectionAssert.AreEquivalent(new []{(2, 0)}, array.Adjacent(1, 1, Directions.SW));
         CollectionAssert.AreEquivalent(new []{(0, 0)}, array.Adjacent(1, 1, Directions.NW));
+
+        Assert.AreEqual((1, 1), array.Adjacent(1, 1, Direction.Origin));
+        Assert.AreEqual((0, 1), array.Adjacent(1, 1, Direction.N));
+        Assert.AreEqual((1, 2), array.Adjacent(1, 1, Direction.E));
+        Assert.AreEqual((2, 1), array.Adjacent(1, 1, Direction.S));
+        Assert.AreEqual((1, 0), array.Adjacent(1, 1, Direction.W));
+        Assert.AreEqual((0, 2), array.Adjacent(1, 1, Direction.NE));
+        Assert.AreEqual((2, 2), array.Adjacent(1, 1, Direction.SE));
+        Assert.AreEqual((2, 0), array.Adjacent(1, 1, Direction.SW));
+        Assert.AreEqual((0, 0), array.Adjacent(1, 1, Direction.NW));
+
+        Assert.AreEqual((0, 0), array.Adjacent(2, 2, Direction.SE, AdjacencyOptions.Wrap));
     }
 
     [Test]
@@ -496,5 +508,25 @@ public class ArrayExtensionsTests {
         Assert.AreEqual(new []{(0, 0), (1, 1), (2, 1)}, array.Find('a'));
         Assert.AreEqual(new []{(0, 1)}, array.Find('b'));
         Assert.AreEqual(new []{(0, 1), (0, 2)}, array.Find(v => v is 'b' or 'c'));
+    }
+
+    [Test]
+    [TestCase(Directions.Origin, new []{Direction.Origin})]
+    [TestCase(Directions.Cardinal, new []{Direction.N, Direction.E, Direction.S, Direction.W})]
+    [TestCase(Directions.Intermediate, new []{Direction.NE, Direction.SE, Direction.SW, Direction.NW})]
+    public void EnumerateTest(Directions dirs, Direction[] expected) {
+        CollectionAssert.AreEquivalent(expected, dirs.Enumerate());
+    }
+
+    [Test]
+    [TestCase(Directions.Origin, 90, Directions.Origin)]
+    [TestCase(Directions.Cardinal, 45, Directions.Intermediate)]
+    [TestCase(Directions.Cardinal, -45, Directions.Intermediate)]
+    [TestCase(Directions.Intermediate, 45, Directions.Cardinal)]
+    [TestCase(Directions.Intermediate, -45, Directions.Cardinal)]
+    [TestCase(Directions.N | Directions.W, 180, Directions.S | Directions.E)]
+    [TestCase(Directions.N, 360, Directions.N)]
+    public void RotateTest(Directions dirs, int degrees, Directions expected) {
+        Assert.AreEqual(expected, dirs.Rotate(degrees));
     }
 }

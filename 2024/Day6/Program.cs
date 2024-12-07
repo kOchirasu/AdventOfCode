@@ -17,24 +17,18 @@ public static class Program {
     }
 
     private static int Part1(char[,] input, (int x, int y) start) {
-        var dir = Directions.N;
+        var dir = Direction.N;
         (int x, int y) cur = start;
 
         while (true) {
             input[cur.x, cur.y] = 'X';
-            (int x, int y) next = input.Adjacent(cur.x, cur.y, dir).SingleOrDefault((-1, -1));
+            (int x, int y) next = input.Adjacent(cur.x, cur.y, dir);
             if (!input.TryGet(next.x, next.y, out char ch)) {
                 return input.Where(c => c == 'X').Count();
             }
 
             if (ch == '#') {
-                dir = dir switch {
-                    Directions.N => Directions.E,
-                    Directions.E => Directions.S,
-                    Directions.S => Directions.W,
-                    Directions.W => Directions.N,
-                    _ => throw new InvalidOperationException($"Invalid direction: {dir}"),
-                };
+                dir = dir.Rotate(90);
                 continue;
             }
 
@@ -52,7 +46,7 @@ public static class Program {
 
                 input[r, c] = '#';
                 Array.Clear(tracking);
-                var dir = Directions.N;
+                var dir = Direction.N;
                 (int x, int y) cur = start;
                 while (true) {
                     if (tracking[cur.x, cur.y].HasFlag(dir)) {
@@ -60,20 +54,14 @@ public static class Program {
                         break;
                     }
 
-                    tracking[cur.x, cur.y] |= dir;
-                    (int x, int y) next = input.Adjacent(cur.x, cur.y, dir).SingleOrDefault((-1, -1));
+                    tracking[cur.x, cur.y] |= (Directions) dir;
+                    (int x, int y) next = input.Adjacent(cur.x, cur.y, dir);
                     if (!input.TryGet(next.x, next.y, out ch)) {
                         break;
                     }
 
                     if (ch == '#') {
-                        dir = dir switch {
-                            Directions.N => Directions.E,
-                            Directions.E => Directions.S,
-                            Directions.S => Directions.W,
-                            Directions.W => Directions.N,
-                            _ => throw new InvalidOperationException($"Invalid direction: {dir}"),
-                        };
+                        dir = dir.Rotate(90);
                         continue;
                     }
 

@@ -18,7 +18,7 @@ public class IntervalCollection : ICollection<Interval> {
             return;
         }
         stack.Push(enumerator.Current);
-        
+
         while (enumerator.MoveNext()) {
             Interval current = enumerator.Current;
             Interval top = stack.Peek();
@@ -51,7 +51,7 @@ public class IntervalCollection : ICollection<Interval> {
 
         intervals = result;
     }
-    
+
     public IEnumerator<Interval> GetEnumerator() => intervals.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -83,7 +83,7 @@ public class IntervalCollection : ICollection<Interval> {
                 result.Add(interval);
                 continue;
             }
-            
+
             if (remove.Start.CompareTo(interval.Start) <= 0) {
                 // Interval:   |-----|
                 // Remove:  |----|
@@ -113,7 +113,11 @@ public class IntervalCollection : ICollection<Interval> {
 
 public record struct Interval(int Start, int End) : IComparable<Interval> {
     public int Size => End - Start + 1;
-    
+
+    public static implicit operator Interval(int n) {
+        return new Interval(n, n);
+    }
+
     public int CompareTo(Interval other) {
         int startComparison = Start.CompareTo(other.Start);
         return startComparison != 0 ? startComparison : End.CompareTo(other.End);
