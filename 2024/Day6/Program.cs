@@ -9,14 +9,16 @@ public static class Program {
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
 
         char[,] input = File.ReadAllLines(file).CharMatrix();
+        (int x, int y) start = input.Find('^').Single();
 
-        Console.WriteLine(Part1(input.Copy()));
-        Console.WriteLine(Part2(input.Copy()));
+        // input is mutated by Part1 for use in Part2.
+        Console.WriteLine(Part1(input, start));
+        Console.WriteLine(Part2(input, start));
     }
 
-    private static int Part1(char[,] input) {
+    private static int Part1(char[,] input, (int x, int y) start) {
         var dir = Directions.N;
-        (int x, int y) cur = input.Find('^').Single();
+        (int x, int y) cur = start;
 
         while (true) {
             input[cur.x, cur.y] = 'X';
@@ -40,17 +42,16 @@ public static class Program {
         }
     }
 
-    private static int Part2(char[,] input) {
-        (int x, int y) start = input.Find('^').Single();
-        Directions[,] template = input.Select<char, Directions>(_ => default);
+    private static int Part2(char[,] input, (int x, int y) start) {
+        var tracking = new Directions[input.RowCount(), input.ColumnCount()];
 
         int total = 0;
         for (int r = 0; r < input.RowCount(); r++) {
             for (int c = 0; c < input.ColumnCount(); c++) {
-                if (!input.TryGet(r, c, out char ch) || ch != '.') continue;
+                if (!input.TryGet(r, c, out char ch) || ch != 'X') continue;
 
                 input[r, c] = '#';
-                Directions[,] tracking = template.Copy();
+                Array.Clear(tracking);
                 var dir = Directions.N;
                 (int x, int y) cur = start;
                 while (true) {
