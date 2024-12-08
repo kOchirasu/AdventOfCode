@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace UtilExtensions;
 
@@ -23,6 +24,11 @@ public static partial class Itertools {
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T[]> Product<T>(this IEnumerable<T> iterable, int repeat = 1) {
+        return iterable.ToArray().Product(repeat);
+    }
+
     public static IEnumerable<T[]> Product<T>(this IList<T> iterable, int repeat = 1) {
         int i = 0;
         while (true) {
@@ -38,6 +44,11 @@ public static partial class Itertools {
             yield return result;
             i++;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T[]> Permutations<T>(this IEnumerable<T> iterable, int length) {
+        return iterable.ToArray().Permutations(length);
     }
 
     public static IEnumerable<T[]> Permutations<T>(this IList<T> iterable, int length = 0) {
@@ -79,6 +90,11 @@ public static partial class Itertools {
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T[]> Combinations<T>(this IEnumerable<T> iterable, int length) {
+        return iterable.ToArray().Combinations(length);
+    }
+
     public static IEnumerable<T[]> Combinations<T>(this IList<T> iterable, int length) {
         if (length > iterable.Count) {
             yield break;
@@ -112,6 +128,11 @@ public static partial class Itertools {
             }
             yield return result;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T[]> CombinationsWithReplacement<T>(this IEnumerable<T> iterable, int length) {
+        return iterable.ToArray().CombinationsWithReplacement(length);
     }
 
     public static IEnumerable<T[]> CombinationsWithReplacement<T>(this IList<T> iterable, int length) {
