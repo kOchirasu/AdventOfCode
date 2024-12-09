@@ -496,7 +496,7 @@ public static class ArrayExtensions {
             throw new ArgumentException($"Invalid direction: {dir}");
         }
 
-        int steps = (degrees % 360 + 360) % 360 / 45;
+        int steps = (degrees % 360 + 360) / 45;
         return Rotations[(index + steps) % Rotations.Length];
     }
 
