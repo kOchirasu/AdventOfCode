@@ -153,6 +153,11 @@ public static class ArrayExtensions {
         return result;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryGet<T>(this T[,] arr, (int Row, int Col) point, [NotNullWhen(true)] out T value) {
+        return arr.TryGet(point.Row, point.Col, out value);
+    }
+
     public static bool TryGet<T>(this T[,] arr, int row, int col, [NotNullWhen(true)] out T value) {
         if (row < 0 || col < 0 || row >= arr.GetLength(0) || col >= arr.GetLength(1)) {
             value = default;
@@ -161,6 +166,11 @@ public static class ArrayExtensions {
 
         value = arr[row, col];
         return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T GetOrDefault<T>(this T[,] arr, (int Row, int Col) point, T @default = default(T)) {
+        return arr.GetOrDefault<T>(point.Row, point.Col, @default);
     }
 
     public static T GetOrDefault<T>(this T[,] arr, int row, int col, T @default = default(T)) {
@@ -500,13 +510,23 @@ public static class ArrayExtensions {
         return Rotations[(index + steps) % Rotations.Length];
     }
 
-    public static IEnumerable<(int, int)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<(int Row, int Col)> Adjacent<T>(this T[,] arr, (int Row, int Col) point, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        return arr.Adjacent(point.Row, point.Col, dir, options);
+    }
+
+    public static IEnumerable<(int Row, int Col)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
         return dir.Enumerate()
             .Select(d => arr.Adjacent(row, col, d, options))
             .Where(coord => coord != (-1, -1));
     }
 
-    public static (int, int) Adjacent<T>(this T[,] arr, int row, int col, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static (int Row, int Col) Adjacent<T>(this T[,] arr, (int Row, int Col) point, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        return arr.Adjacent(point.Row, point.Col, dir, options);
+    }
+
+    public static (int Row, int Col) Adjacent<T>(this T[,] arr, int row, int col, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
         (int dX, int dY) = dir.Delta();
         int r = row + dX;
         int c = col + dY;
@@ -536,6 +556,10 @@ public static class ArrayExtensions {
         }
 
         return result;
+    }
+
+    public static IEnumerable<T> Flatten<T>(this T[,] items) {
+        return items.Cast<T>();
     }
 
     public static TR[,] Compose<T1, T2, TR>(this T1[,] arr1, T2[,] arr2, Func<T1, T2, TR> f) {

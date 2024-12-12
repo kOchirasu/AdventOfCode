@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using static UtilExtensions.ArrayExtensions;
 
 namespace UtilExtensions;
@@ -168,27 +170,41 @@ public sealed class DynamicMatrix<T> : IEnumerable<T> {
         };
     }
 
-    public IEnumerable<(int, int)> Adjacent(int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (int Row, int Col)[] Adjacent((int Row, int Col) point, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        return Adjacent(point.Row, point.Col, dir, options);
+    }
+
+    // We intentionally force enumeration here because DynamicMatrix may grow while enumerating.
+    public (int Row, int Col)[] Adjacent(int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
         (int normalizeRow, int normalizeCol) = Normalize(row, col);
-        foreach ((int r, int c) in Value.Adjacent(normalizeRow, normalizeCol, dir, options)) {
-            yield return (r - offsetRow, c - offsetCol);
-        }
+        return Value.Adjacent(normalizeRow, normalizeCol, dir, options)
+            .Select(i => (i.Row - offsetRow, i.Col - offsetCol))
+            .ToArray();
     }
 
-    public (int, int) Adjacent(int row, int col, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (int Row, int Col) Adjacent((int Row, int Col) point, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
+        return Adjacent(point.Row, point.Col, dir, options);
+    }
+
+    public (int Row, int Col) Adjacent(int row, int col, Direction dir, AdjacencyOptions options = AdjacencyOptions.None) {
         (int normalizeRow, int normalizeCol) = Normalize(row, col);
-        return Value.Adjacent(normalizeRow, normalizeCol, dir, options);
+        (int Row, int Col) result = Value.Adjacent(normalizeRow, normalizeCol, dir, options);
+        return (result.Row - offsetRow, result.Col - offsetCol);
     }
 
-    public IEnumerable<(int Row, int Col)> Find(T value) {
-        foreach ((int r, int c) in Value.Find(value)) {
-            yield return (r - offsetRow, c - offsetCol);
-        }
+    // We intentionally force enumeration here because DynamicMatrix may grow while enumerating.
+    public (int Row, int Col)[] Find(T value) {
+        return Value.Find(value)
+            .Select(i => (i.Row - offsetRow, i.Col - offsetCol))
+            .ToArray();
     }
 
-    public IEnumerable<(int Row, int Col)> Find(Func<T, bool> predicate) {
-        foreach ((int r, int c) in Value.Find(predicate)) {
-            yield return (r - offsetRow, c - offsetCol);
-        }
+    // We intentionally force enumeration here because DynamicMatrix may grow while enumerating.
+    public (int Row, int Col)[] Find(Func<T, bool> predicate) {
+        return Value.Find(predicate)
+            .Select(i => (i.Row - offsetRow, i.Col - offsetCol))
+            .ToArray();
     }
 }

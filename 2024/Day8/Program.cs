@@ -47,8 +47,7 @@ public static class Program {
             foreach ((int, int)[] combo in input.Find(c).Combinations(2)) {
                 (int Row, int Col) a = combo[0];
                 (int Row, int Col) b = combo[1];
-                int dX = a.Row - b.Row;
-                int dY = a.Col - b.Col;
+                (int dX, int dY) = combo[0].ManhattanDelta(combo[1]);
 
                 bool mutated;
                 do {

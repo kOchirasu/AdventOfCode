@@ -1,4 +1,6 @@
-﻿namespace UtilExtensions;
+﻿using System;
+
+namespace UtilExtensions;
 
 public static class MathUtils {
     /// <summary>
@@ -43,5 +45,13 @@ public static class MathUtils {
             (a, b) = (b, a % b);
         }
         return a;
+    }
+
+    public static int ManhattanDistance(this (int, int) p1, (int, int) p2) {
+        return Math.Abs(p1.Item1 - p2.Item1) + Math.Abs(p1.Item2 - p2.Item2);
+    }
+
+    public static (int dX, int dY) ManhattanDelta(this (int, int) p1, (int, int) p2) {
+        return (p1.Item1 - p2.Item1, p1.Item2 - p2.Item2);
     }
 }
