@@ -1,4 +1,5 @@
-﻿using UtilExtensions;
+﻿using System.Diagnostics;
+using UtilExtensions;
 using static UtilExtensions.ArrayExtensions;
 
 namespace Day12;
@@ -64,6 +65,32 @@ public static class Program {
         foreach ((int Row, int Col) point in points) {
             grid[point.Row, point.Col] = '#';
         }
+        var grid2 = grid.Copy();
+
+        int corners = 0;
+        foreach ((int Row, int Col) point in grid.Find('#')) {
+            var cardinal = Directions.N | Directions.E;
+            var diagonal = Direction.NE;
+
+            for (int i = 0; i < 4; i++) {
+                var a1 = grid.Adjacent(point, cardinal, AdjacencyOptions.Expand);
+                var n1 = a1.Select(p => grid[p.Row, p.Col]).ToArray();
+                var a2 = grid.Adjacent(point, diagonal, AdjacencyOptions.Expand);
+                var n2 = grid[a2.Row, a2.Col];
+
+                if (n1.All(x => x == '#') && n2 != '#' || n1.All(x => x != '#')) {
+                    corners++;
+                    if (grid2[point.Row, point.Col] == '#') {
+                        grid2[point.Row, point.Col] = '1';
+                    } else {
+                        grid2[point.Row, point.Col]++;
+                    }
+                }
+
+                cardinal = cardinal.Rotate(90);
+                diagonal = diagonal.Rotate(90);
+            }
+        }
 
         int count = 0;
         foreach (Direction dir in Directions.Cardinal.Enumerate()) {
@@ -81,6 +108,36 @@ public static class Program {
             count += (sides.Count - duplicates);
         }
 
+
+        return count;
+    }
+
+    private static int CountCorners((int Row, int Col)[] points) {
+        var grid = new DynamicMatrix<char>(@default: '.', expandOnAccess: true);
+        foreach ((int Row, int Col) point in points) {
+            grid[point.Row, point.Col] = '#';
+        }
+
+        int count = 0;
+        foreach ((int Row, int Col) point in grid.Find('#')) {
+            var cardinal = Directions.N | Directions.E;
+            var diagonal = Direction.NE;
+
+            for (int i = 0; i < 4; i++) {
+                var a1 = grid.Adjacent(point, cardinal, AdjacencyOptions.Expand);
+                var n1 = a1.Select(p => grid[p.Row, p.Col]).ToArray();
+                var a2 = grid.Adjacent(point, diagonal, AdjacencyOptions.Expand);
+                var n2 = grid[a2.Row, a2.Col];
+
+                if (n1.All(x => x == '#') && n2 != '#' || n1.All(x => x != '#')) {
+                    count++;
+                }
+
+                cardinal = cardinal.Rotate(90);
+                diagonal = diagonal.Rotate(90);
+            }
+        }
+
         return count;
     }
 
@@ -93,6 +150,8 @@ public static class Program {
 
                 (int Row, int Col)[] connected = GetConnected(input, visited, (r, c)).ToArray();
                 int sides = CountSides(connected);
+                int corners = CountCorners(connected);
+                Debug.Assert(sides == corners);
 
                 price += connected.Length * sides;
             }
