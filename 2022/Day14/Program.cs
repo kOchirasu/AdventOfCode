@@ -10,10 +10,10 @@ public static class Program {
 
         var grid = new DynamicMatrix<char>(@default: '.');
         foreach (string line in File.ReadAllLines(file)) {
-            var path = new List<(int, int)>();
+            var path = new List<Point>();
             foreach (string split in line.Split(" -> ")) {
-                string[] coords = split.Extract(@"(\d+),(\d+)");
-                path.Add((int.Parse(coords[1]), int.Parse(coords[0])));
+                int[] coords = split.Extract<int>(@"(\d+),(\d+)");
+                path.Add(new Point(coords[1], coords[0]));
             }
 
             DrawBarriers(grid, path);
@@ -51,10 +51,10 @@ public static class Program {
         return count;
     }
 
-    private static void DrawBarriers(DynamicMatrix<char> grid, IList<(int, int)> path) {
-        (int Row, int Col) start = path[0];
+    private static void DrawBarriers(DynamicMatrix<char> grid, IList<Point> path) {
+        Point start = path[0];
         for (int i = 1; i < path.Count; i++) {
-            (int Row, int Col) end = path[i];
+            Point end = path[i];
             if (start.Row == end.Row) {
                 int lo = Math.Min(start.Col, end.Col);
                 int hi = Math.Max(start.Col, end.Col);

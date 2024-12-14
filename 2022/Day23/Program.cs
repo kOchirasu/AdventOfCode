@@ -29,7 +29,7 @@ public static class Program {
             Simulate(grid, i);
         }
 
-        (int Row, int Col)[] elves = grid.Find('#').ToArray();
+        Point[] elves = grid.Find('#').ToArray();
         int rows = elves.Select(pos => pos.Row).Max() - elves.Select(pos => pos.Row).Min() + 1;
         int cols = elves.Select(pos => pos.Col).Max() - elves.Select(pos => pos.Col).Min() + 1;
         return rows * cols - elves.Length;
@@ -51,16 +51,16 @@ public static class Program {
     }
 
     private static bool Simulate(DynamicMatrix<char> grid, int iteration) {
-        var moves = new DefaultDictionary<(int r, int c), List<(int r, int c)>>(() => new List<(int r, int c)>());
-        foreach ((int r, int c) elf in grid.Find('#')) {
-            if (grid.Adjacent(elf.r, elf.c, Directions.All).All(p => grid[p.Item1, p.Item2] == '.')) {
+        var moves = new DefaultDictionary<Point, List<Point>>(() => new List<Point>());
+        foreach (Point elf in grid.Find('#')) {
+            if (grid.Adjacent(elf, Directions.All).All(p => grid[p] == '.')) {
                 continue;
             }
 
             for (int i = 0; i < 4; i++) {
                 (Directions Check, Direction Direction) rule = Rules[(iteration + i) % 4];
-                if (grid.Adjacent(elf.r, elf.c, rule.Check).All(p => grid[p.Item1, p.Item2] == '.')) {
-                    (int, int) target = grid.Adjacent(elf.r, elf.c, rule.Direction, AdjacencyOptions.Expand);
+                if (grid.Adjacent(elf, rule.Check).All(p => grid[p] == '.')) {
+                    Point target = grid.Adjacent(elf, rule.Direction, AdjacencyOptions.Expand);
                     moves[target].Add(elf);
                     break;
                 }
@@ -68,16 +68,16 @@ public static class Program {
         }
 
         bool moved = false;
-        foreach (((int r, int c) target, List<(int, int)> origins) in moves) {
+        foreach ((Point target, List<Point> origins) in moves) {
             // Multiple elves moving to the same target.
             if (origins.Count > 1) {
                 continue;
             }
 
-            (int r, int c) origin = origins.Single();
-            Debug.Assert(grid[target.r, target.c] == '.' && grid[origin.r, origin.c] == '#');
-            grid[target.r, target.c] = '#';
-            grid[origin.r, origin.c] = '.';
+            Point origin = origins.Single();
+            Debug.Assert(grid[target] == '.' && grid[origin] == '#');
+            grid[target] = '#';
+            grid[origin] = '.';
             moved = true;
         }
 

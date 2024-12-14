@@ -346,36 +346,36 @@ public class ArrayExtensionsTests {
     public void AdjacentTest() {
         int[,] array = new int[3, 3];
 
-        CollectionAssert.AreEquivalent(new []{(0, 1), (1, 0)},
+        CollectionAssert.AreEquivalent(new Point[]{(0, 1), (1, 0)},
             array.Adjacent(0, 0, Directions.Cardinal));
-        CollectionAssert.AreEquivalent(new []{(1, 1)},
+        CollectionAssert.AreEquivalent(new Point[]{(1, 1)},
             array.Adjacent(0, 0, Directions.Intermediate));
-        CollectionAssert.AreEquivalent(new []{(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)},
+        CollectionAssert.AreEquivalent(new Point[]{(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)},
             array.Adjacent(1, 1, Directions.All));
-        CollectionAssert.AreEquivalent(new []{(0, 2), (1, 0), (1, 1), (2, 2)},
+        CollectionAssert.AreEquivalent(new Point[]{(0, 2), (1, 0), (1, 1), (2, 2)},
             array.Adjacent(1, 2, Directions.Cardinal, AdjacencyOptions.Wrap));
 
-        CollectionAssert.AreEquivalent(new []{(1, 1)}, array.Adjacent(1, 1, Directions.Origin));
-        CollectionAssert.AreEquivalent(new []{(0, 1)}, array.Adjacent(1, 1, Directions.N));
-        CollectionAssert.AreEquivalent(new []{(1, 2)}, array.Adjacent(1, 1, Directions.E));
-        CollectionAssert.AreEquivalent(new []{(2, 1)}, array.Adjacent(1, 1, Directions.S));
-        CollectionAssert.AreEquivalent(new []{(1, 0)}, array.Adjacent(1, 1, Directions.W));
-        CollectionAssert.AreEquivalent(new []{(0, 2)}, array.Adjacent(1, 1, Directions.NE));
-        CollectionAssert.AreEquivalent(new []{(2, 2)}, array.Adjacent(1, 1, Directions.SE));
-        CollectionAssert.AreEquivalent(new []{(2, 0)}, array.Adjacent(1, 1, Directions.SW));
-        CollectionAssert.AreEquivalent(new []{(0, 0)}, array.Adjacent(1, 1, Directions.NW));
+        CollectionAssert.AreEquivalent(new Point[]{(1, 1)}, array.Adjacent(1, 1, Directions.Origin));
+        CollectionAssert.AreEquivalent(new Point[]{(0, 1)}, array.Adjacent(1, 1, Directions.N));
+        CollectionAssert.AreEquivalent(new Point[]{(1, 2)}, array.Adjacent(1, 1, Directions.E));
+        CollectionAssert.AreEquivalent(new Point[]{(2, 1)}, array.Adjacent(1, 1, Directions.S));
+        CollectionAssert.AreEquivalent(new Point[]{(1, 0)}, array.Adjacent(1, 1, Directions.W));
+        CollectionAssert.AreEquivalent(new Point[]{(0, 2)}, array.Adjacent(1, 1, Directions.NE));
+        CollectionAssert.AreEquivalent(new Point[]{(2, 2)}, array.Adjacent(1, 1, Directions.SE));
+        CollectionAssert.AreEquivalent(new Point[]{(2, 0)}, array.Adjacent(1, 1, Directions.SW));
+        CollectionAssert.AreEquivalent(new Point[]{(0, 0)}, array.Adjacent(1, 1, Directions.NW));
 
-        Assert.AreEqual((1, 1), array.Adjacent(1, 1, Direction.Origin));
-        Assert.AreEqual((0, 1), array.Adjacent(1, 1, Direction.N));
-        Assert.AreEqual((1, 2), array.Adjacent(1, 1, Direction.E));
-        Assert.AreEqual((2, 1), array.Adjacent(1, 1, Direction.S));
-        Assert.AreEqual((1, 0), array.Adjacent(1, 1, Direction.W));
-        Assert.AreEqual((0, 2), array.Adjacent(1, 1, Direction.NE));
-        Assert.AreEqual((2, 2), array.Adjacent(1, 1, Direction.SE));
-        Assert.AreEqual((2, 0), array.Adjacent(1, 1, Direction.SW));
-        Assert.AreEqual((0, 0), array.Adjacent(1, 1, Direction.NW));
+        Assert.AreEqual(new Point(1, 1), array.Adjacent(1, 1, Direction.Origin));
+        Assert.AreEqual(new Point(0, 1), array.Adjacent(1, 1, Direction.N));
+        Assert.AreEqual(new Point(1, 2), array.Adjacent(1, 1, Direction.E));
+        Assert.AreEqual(new Point(2, 1), array.Adjacent(1, 1, Direction.S));
+        Assert.AreEqual(new Point(1, 0), array.Adjacent(1, 1, Direction.W));
+        Assert.AreEqual(new Point(0, 2), array.Adjacent(1, 1, Direction.NE));
+        Assert.AreEqual(new Point(2, 2), array.Adjacent(1, 1, Direction.SE));
+        Assert.AreEqual(new Point(2, 0), array.Adjacent(1, 1, Direction.SW));
+        Assert.AreEqual(new Point(0, 0), array.Adjacent(1, 1, Direction.NW));
 
-        Assert.AreEqual((0, 0), array.Adjacent(2, 2, Direction.SE, AdjacencyOptions.Wrap));
+        Assert.AreEqual(new Point(0, 0), array.Adjacent(2, 2, Direction.SE, AdjacencyOptions.Wrap));
     }
 
     [Test]
@@ -461,17 +461,17 @@ public class ArrayExtensionsTests {
             {'d', 'e', 'f'},
             {'g', 'h', 'i'},
         };
-        BidirectionalGraph<(int, int), TaggedEdge<(int, int), (char, char)>> graph = array.AsGraph();
-        // foreach ((int, int) vertex in graph.Vertices) {
+        BidirectionalGraph<Point, TaggedEdge<Point, (char, char)>> graph = array.AsGraph();
+        // foreach (Point vertex in graph.Vertices) {
         //     Console.WriteLine($"Vertex: {vertex}");
-        //     foreach(TaggedEdge<(int, int), char> edge in graph.InEdges(vertex)) {
+        //     foreach(TaggedEdge<Point, char> edge in graph.InEdges(vertex)) {
         //         Console.WriteLine($"> {edge}");
         //     }
         // }
 
-        TryFunc<(int, int), IEnumerable<TaggedEdge<(int, int), (char, char)>>> tryGetPaths = graph.ShortestPathsDijkstra(edge => 1, (0, 0));
-        if (tryGetPaths((2, 2), out IEnumerable<TaggedEdge<(int, int), (char, char)>> results)) {
-            foreach (TaggedEdge<(int, int), (char, char)> result in results) {
+        TryFunc<Point, IEnumerable<TaggedEdge<Point, (char, char)>>> tryGetPaths = graph.ShortestPathsDijkstra(edge => 1, (0, 0));
+        if (tryGetPaths((2, 2), out IEnumerable<TaggedEdge<Point, (char, char)>> results)) {
+            foreach (TaggedEdge<Point, (char, char)> result in results) {
                 Console.WriteLine(result);
             }
         }
@@ -505,9 +505,9 @@ public class ArrayExtensionsTests {
             {'g', 'a', 'i'},
         };
 
-        Assert.AreEqual(new []{(0, 0), (1, 1), (2, 1)}, array.Find('a'));
-        Assert.AreEqual(new []{(0, 1)}, array.Find('b'));
-        Assert.AreEqual(new []{(0, 1), (0, 2)}, array.Find(v => v is 'b' or 'c'));
+        Assert.AreEqual(new Point[]{(0, 0), (1, 1), (2, 1)}, array.Find('a'));
+        Assert.AreEqual(new Point[]{(0, 1)}, array.Find('b'));
+        Assert.AreEqual(new Point[]{(0, 1), (0, 2)}, array.Find(v => v is 'b' or 'c'));
     }
 
     [Test]

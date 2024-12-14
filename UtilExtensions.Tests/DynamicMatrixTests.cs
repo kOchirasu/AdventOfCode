@@ -267,24 +267,24 @@ public class DynamicMatrixTests {
             [-1, -1] = 0,
         };
 
-        CollectionAssert.AreEquivalent(new []{(-1, 0), (0, -1)},
+        CollectionAssert.AreEquivalent(new Point[]{(-1, 0), (0, -1)},
             matrix.Adjacent(-1, -1, Directions.Cardinal));
-        CollectionAssert.AreEquivalent(new []{(0, 0)},
+        CollectionAssert.AreEquivalent(new Point[]{(0, 0)},
             matrix.Adjacent(-1, -1, Directions.Intermediate));
-        CollectionAssert.AreEquivalent(new []{(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)},
+        CollectionAssert.AreEquivalent(new Point[]{(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)},
             matrix.Adjacent(0, 0, Directions.All));
-        CollectionAssert.AreEquivalent(new []{(-1, 1), (0, -1), (0, 0), (1, 1)},
+        CollectionAssert.AreEquivalent(new Point[]{(-1, 1), (0, -1), (0, 0), (1, 1)},
             matrix.Adjacent(0, 1, Directions.Cardinal, AdjacencyOptions.Wrap));
 
-        CollectionAssert.AreEquivalent(new []{(0, 0)}, matrix.Adjacent(0, 0, Directions.Origin));
-        CollectionAssert.AreEquivalent(new []{(-1, 0)}, matrix.Adjacent(0, 0, Directions.N));
-        CollectionAssert.AreEquivalent(new []{(0, 1)}, matrix.Adjacent(0, 0, Directions.E));
-        CollectionAssert.AreEquivalent(new []{(1, 0)}, matrix.Adjacent(0, 0, Directions.S));
-        CollectionAssert.AreEquivalent(new []{(0, -1)}, matrix.Adjacent(0, 0, Directions.W));
-        CollectionAssert.AreEquivalent(new []{(-1, 1)}, matrix.Adjacent(0, 0, Directions.NE));
-        CollectionAssert.AreEquivalent(new []{(1, 1)}, matrix.Adjacent(0, 0, Directions.SE));
-        CollectionAssert.AreEquivalent(new []{(1, -1)}, matrix.Adjacent(0, 0, Directions.SW));
-        CollectionAssert.AreEquivalent(new []{(-1, -1)}, matrix.Adjacent(0, 0, Directions.NW));
+        CollectionAssert.AreEquivalent(new Point[]{(0, 0)}, matrix.Adjacent(0, 0, Directions.Origin));
+        CollectionAssert.AreEquivalent(new Point[]{(-1, 0)}, matrix.Adjacent(0, 0, Directions.N));
+        CollectionAssert.AreEquivalent(new Point[]{(0, 1)}, matrix.Adjacent(0, 0, Directions.E));
+        CollectionAssert.AreEquivalent(new Point[]{(1, 0)}, matrix.Adjacent(0, 0, Directions.S));
+        CollectionAssert.AreEquivalent(new Point[]{(0, -1)}, matrix.Adjacent(0, 0, Directions.W));
+        CollectionAssert.AreEquivalent(new Point[]{(-1, 1)}, matrix.Adjacent(0, 0, Directions.NE));
+        CollectionAssert.AreEquivalent(new Point[]{(1, 1)}, matrix.Adjacent(0, 0, Directions.SE));
+        CollectionAssert.AreEquivalent(new Point[]{(1, -1)}, matrix.Adjacent(0, 0, Directions.SW));
+        CollectionAssert.AreEquivalent(new Point[]{(-1, -1)}, matrix.Adjacent(0, 0, Directions.NW));
     }
 
     [Test]
@@ -300,8 +300,8 @@ public class DynamicMatrixTests {
         var matrix = new DynamicMatrix<char>();
         matrix.Insert(data, -1, -2);
 
-        Assert.AreEqual(new []{(-1, -2), (0, -1), (1, -1), (3, 1)}, matrix.Find('a'));
-        Assert.AreEqual(new []{(-1, -1)}, matrix.Find('b'));
-        Assert.AreEqual(new []{(2, -2), (2, 1)}, matrix.Find(v => v is 'm' or 'p'));
+        Assert.AreEqual(new Point[]{(-1, -2), (0, -1), (1, -1), (3, 1)}, matrix.Find('a'));
+        Assert.AreEqual(new Point[]{(-1, -1)}, matrix.Find('b'));
+        Assert.AreEqual(new Point[]{(2, -2), (2, 1)}, matrix.Find(v => v is 'm' or 'p'));
     }
 }

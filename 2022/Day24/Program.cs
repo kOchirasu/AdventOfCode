@@ -30,17 +30,17 @@ public static class Program {
 
         MinuteGrids.Add(grid);
 
-        (int, int) start = (0, 1);
-        (int, int) end = (grid.RowCount() - 1, grid.ColumnCount() - 2);
+        var start = new Point(0, 1);
+        var end = new Point(grid.RowCount() - 1, grid.ColumnCount() - 2);
         Console.WriteLine(Part1(start, end));
         Console.WriteLine(Part2(start, end));
     }
 
-    private static int Part1((int, int) start, (int, int) end) {
+    private static int Part1(Point start, Point end) {
         return Search(start, end, 0);
     }
 
-    private static int Part2((int, int) start, (int, int) end) {
+    private static int Part2(Point start, Point end) {
         int time = Search(start, end, 0);
         time = Search(end, start, time);
         return Search(start, end, time);
@@ -71,12 +71,12 @@ public static class Program {
 
                 foreach ((Tile blizzard, Direction direction) in Movements) {
                     if ((tile & blizzard) != 0) {
-                        (int r, int c) pos = (r, c);
+                        var pos = new Point(r, c);
                         do {
-                            pos = prev.Adjacent(pos.r, pos.c, direction, AdjacencyOptions.Wrap);
-                        } while (prev[pos.r, pos.c] == Tile.Wall);
+                            pos = prev.Adjacent(pos, direction, AdjacencyOptions.Wrap);
+                        } while (prev[pos.Row, pos.Col] == Tile.Wall);
 
-                        next[pos.r, pos.c] |= blizzard;
+                        next[pos.Row, pos.Col] |= blizzard;
                     }
                 }
             }
@@ -86,13 +86,13 @@ public static class Program {
         return MinuteGrids[minute];
     }
 
-    private static int Search((int r, int c) start, (int r, int c) end, int minute) {
-        var queue = new Queue<(int r, int c, int min)>();
-        queue.Enqueue((start.r, start.c, minute));
+    private static int Search(Point start, Point end, int minute) {
+        var queue = new Queue<(Point p, int min)>();
+        queue.Enqueue((start, minute));
 
-        var duplicates = new HashSet<(int, int, int)>();
-        while (queue.TryDequeue(out (int r, int c, int min) cur)) {
-            if (cur.r == end.r && cur.c == end.c) {
+        var duplicates = new HashSet<(Point, int)>();
+        while (queue.TryDequeue(out (Point p, int min) cur)) {
+            if (cur.p == end) {
                 return cur.min;
             }
 
@@ -103,13 +103,13 @@ public static class Program {
 
 
             Tile[,] grid = GetGrid(cur.min + 1);
-            if (grid[cur.r, cur.c] == Tile.Ground) {
-                queue.Enqueue((cur.r, cur.c, cur.min + 1)); // Stay
+            if (grid[cur.p.Row, cur.p.Col] == Tile.Ground) {
+                queue.Enqueue((cur.p, cur.min + 1)); // Stay
             }
 
-            foreach ((int r, int c) adj in grid.Adjacent(cur.r, cur.c, Directions.Cardinal)) {
-                if (grid[adj.r, adj.c] == Tile.Ground) {
-                    queue.Enqueue((adj.r, adj.c, cur.min + 1));
+            foreach (Point adj in grid.Adjacent(cur.p, Directions.Cardinal)) {
+                if (grid[adj.Row, adj.Col] == Tile.Ground) {
+                    queue.Enqueue((adj, cur.min + 1));
                 }
             }
         }

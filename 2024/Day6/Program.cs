@@ -9,21 +9,21 @@ public static class Program {
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
 
         char[,] input = File.ReadAllLines(file).CharMatrix();
-        (int x, int y) start = input.Find('^').Single();
+        Point start = input.Find('^').Single();
 
         // input is mutated by Part1 for use in Part2.
         Console.WriteLine(Part1(input, start));
         Console.WriteLine(Part2(input, start));
     }
 
-    private static int Part1(char[,] input, (int x, int y) start) {
+    private static int Part1(char[,] input, Point start) {
         var dir = Direction.N;
-        (int x, int y) cur = start;
+        Point cur = start;
 
         while (true) {
-            input[cur.x, cur.y] = 'X';
-            (int x, int y) next = input.Adjacent(cur.x, cur.y, dir);
-            if (!input.TryGet(next.x, next.y, out char ch)) {
+            input[cur.Row, cur.Col] = 'X';
+            Point next = input.Adjacent(cur.Row, cur.Col, dir);
+            if (!input.TryGet(next.Row, next.Col, out char ch)) {
                 return input.Where(c => c == 'X').Count();
             }
 
@@ -36,7 +36,7 @@ public static class Program {
         }
     }
 
-    private static int Part2(char[,] input, (int x, int y) start) {
+    private static int Part2(char[,] input, Point start) {
         var tracking = new Directions[input.RowCount(), input.ColumnCount()];
 
         int total = 0;
@@ -47,16 +47,16 @@ public static class Program {
                 input[r, c] = '#';
                 Array.Clear(tracking);
                 var dir = Direction.N;
-                (int x, int y) cur = start;
+                Point cur = start;
                 while (true) {
-                    if (tracking[cur.x, cur.y].HasFlag(dir)) {
+                    if (tracking[cur.Row, cur.Col].HasFlag(dir)) {
                         total++;
                         break;
                     }
 
-                    tracking[cur.x, cur.y] |= (Directions) dir;
-                    (int x, int y) next = input.Adjacent(cur.x, cur.y, dir);
-                    if (!input.TryGet(next.x, next.y, out ch)) {
+                    tracking[cur.Row, cur.Col] |= (Directions) dir;
+                    Point next = input.Adjacent(cur.Row, cur.Col, dir);
+                    if (!input.TryGet(next.Row, next.Col, out ch)) {
                         break;
                     }
 

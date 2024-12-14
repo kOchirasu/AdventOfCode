@@ -19,7 +19,7 @@ namespace Day25 {
             do {
                 moved = false;
 
-                char[,] next = (char[,])input.Clone();
+                char[,] next = input.Copy();
                 for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         if (input[i, j] == '.') continue;
@@ -33,7 +33,7 @@ namespace Day25 {
                     }
                 }
 
-                input = (char[,])next.Clone();
+                input = next.Copy();
                 for (int j = 0; j < cols; j++) {
                     for (int i = 0; i < rows; i++) {
                         if (input[i, j] == '.') continue;

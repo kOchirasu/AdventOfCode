@@ -15,9 +15,9 @@ public static class Program {
         Console.WriteLine(Part2(input));
     }
 
-    private static int GetPerimeter(char[,] input, (int Row, int Col)[] connected) {
+    private static int GetPerimeter(char[,] input, Point[] connected) {
         int perimeter = connected.Length * 4;
-        foreach ((int Row, int Col) point in connected) {
+        foreach (Point point in connected) {
             perimeter -= input.Adjacent(point, Directions.Cardinal)
                 .Count(adj => input[adj.Row, adj.Col] == input[point.Row, point.Col]);
         }
@@ -25,17 +25,17 @@ public static class Program {
         return perimeter;
     }
 
-    private static IEnumerable<(int Row, int Col)> GetConnected(char[,] input, bool[,] visited, (int Row, int Col) start) {
-        var queue = new Queue<(int Row, int Col)>();
+    private static IEnumerable<Point> GetConnected(char[,] input, bool[,] visited, Point start) {
+        var queue = new Queue<Point>();
         queue.Enqueue(start);
 
-        while (queue.TryDequeue(out (int Row, int Col) item)) {
+        while (queue.TryDequeue(out Point item)) {
             if (visited[item.Row, item.Col]) continue;
 
             visited[item.Row, item.Col] = true;
             yield return item;
 
-            foreach ((int Row, int Col) adj in input.Adjacent(item, Directions.Cardinal)) {
+            foreach (Point adj in input.Adjacent(item, Directions.Cardinal)) {
                 if (input[adj.Row, adj.Col] == input[start.Row, start.Col]) {
                     queue.Enqueue(adj);
                 }
@@ -50,7 +50,7 @@ public static class Program {
             for (int c = 0; c < input.ColumnCount(); c++) {
                 if (visited[r, c]) continue;
 
-                (int, int)[] connected = GetConnected(input, visited, (r, c)).ToArray();
+                Point[] connected = GetConnected(input, visited, (r, c)).ToArray();
                 int perimeter = GetPerimeter(input, connected);
 
                 price += connected.Length * perimeter;
@@ -60,23 +60,23 @@ public static class Program {
         return price;
     }
 
-    private static int CountSides((int Row, int Col)[] points) {
+    private static int CountSides(Point[] points) {
         var grid = new DynamicMatrix<char>(@default: '.', expandOnAccess: true);
-        foreach ((int Row, int Col) point in points) {
-            grid[point.Row, point.Col] = '#';
+        foreach (Point point in points) {
+            grid[point] = '#';
         }
         var grid2 = grid.Copy();
 
         int corners = 0;
-        foreach ((int Row, int Col) point in grid.Find('#')) {
+        foreach (Point point in grid.Find('#')) {
             var cardinal = Directions.N | Directions.E;
             var diagonal = Direction.NE;
 
             for (int i = 0; i < 4; i++) {
                 var a1 = grid.Adjacent(point, cardinal, AdjacencyOptions.Expand);
-                var n1 = a1.Select(p => grid[p.Row, p.Col]).ToArray();
+                var n1 = a1.Select(p => grid[p]).ToArray();
                 var a2 = grid.Adjacent(point, diagonal, AdjacencyOptions.Expand);
-                var n2 = grid[a2.Row, a2.Col];
+                var n2 = grid[a2];
 
                 if (n1.All(x => x == '#') && n2 != '#' || n1.All(x => x != '#')) {
                     corners++;
@@ -94,10 +94,10 @@ public static class Program {
 
         int count = 0;
         foreach (Direction dir in Directions.Cardinal.Enumerate()) {
-            var sides = new HashSet<(int, int)>();
-            foreach ((int Row, int Col) point in grid.Find('#')) {
-                (int Row, int Col) adj = grid.Adjacent(point, dir, AdjacencyOptions.Expand);
-                if (grid[adj.Row, adj.Col] == '.') {
+            var sides = new HashSet<Point>();
+            foreach (Point point in grid.Find('#')) {
+                Point adj = grid.Adjacent(point, dir, AdjacencyOptions.Expand);
+                if (grid[adj] == '.') {
                     sides.Add(adj);
                 }
             }
@@ -112,22 +112,22 @@ public static class Program {
         return count;
     }
 
-    private static int CountCorners((int Row, int Col)[] points) {
+    private static int CountCorners(Point[] points) {
         var grid = new DynamicMatrix<char>(@default: '.', expandOnAccess: true);
-        foreach ((int Row, int Col) point in points) {
-            grid[point.Row, point.Col] = '#';
+        foreach (Point point in points) {
+            grid[point] = '#';
         }
 
         int count = 0;
-        foreach ((int Row, int Col) point in grid.Find('#')) {
+        foreach (Point point in grid.Find('#')) {
             var cardinal = Directions.N | Directions.E;
             var diagonal = Direction.NE;
 
             for (int i = 0; i < 4; i++) {
                 var a1 = grid.Adjacent(point, cardinal, AdjacencyOptions.Expand);
-                var n1 = a1.Select(p => grid[p.Row, p.Col]).ToArray();
+                var n1 = a1.Select(p => grid[p]).ToArray();
                 var a2 = grid.Adjacent(point, diagonal, AdjacencyOptions.Expand);
-                var n2 = grid[a2.Row, a2.Col];
+                var n2 = grid[a2];
 
                 if (n1.All(x => x == '#') && n2 != '#' || n1.All(x => x != '#')) {
                     count++;
@@ -148,7 +148,7 @@ public static class Program {
             for (int c = 0; c < input.ColumnCount(); c++) {
                 if (visited[r, c]) continue;
 
-                (int Row, int Col)[] connected = GetConnected(input, visited, (r, c)).ToArray();
+                Point[] connected = GetConnected(input, visited, (r, c)).ToArray();
                 int sides = CountSides(connected);
                 int corners = CountCorners(connected);
                 Debug.Assert(sides == corners);

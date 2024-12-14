@@ -11,31 +11,26 @@ public static class Program {
     public static void Main() {
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
 
-        List<((int, int) p, (int, int) v)> inputs = File.ReadAllText(file)
+        List<(Point p, Point v)> inputs = File.ReadAllText(file)
             .ExtractAll<int>(@"p=(\d+),(\d+) v=(-?\d+),(-?\d+)")
-            .Select(values => ((values[1], values[0]), (values[3], values[2])))
+            .Select(values => (new Point(values[1], values[0]), new Point(values[3], values[2])))
             .ToList();
 
         Console.WriteLine(Part1(inputs));
         Console.WriteLine(Part2(inputs));
     }
 
-    private static int[,] Compute(List<((int, int) p, (int, int) v)> inputs, int steps) {
+    private static int[,] Compute(List<(Point p, Point v)> inputs, int steps) {
         var grid = new int[HEIGHT, WIDTH];
-        foreach (((int R, int C) p, (int dR, int dC) v) in inputs) {
-            int fR = p.R + steps * v.dR;
-            int fC = p.C + steps * v.dC;
-
-            fR = ((fR % HEIGHT) + HEIGHT) % HEIGHT;
-            fC = ((fC % WIDTH) + WIDTH) % WIDTH;
-
-            grid[fR, fC]++;
+        foreach ((Point p, Point v) in inputs) {
+            Point f = (p + v * steps) % (HEIGHT, WIDTH);
+            grid[f.Row, f.Col]++;
         }
 
         return grid;
     }
 
-    private static int Part1(List<((int, int) p, (int, int) v)> inputs) {
+    private static int Part1(List<(Point p, Point v)> inputs) {
         int[,] grid = Compute(inputs, 100);
 
         int[,] a = grid.Extract(0, 0, HEIGHT / 2, WIDTH / 2);
@@ -52,7 +47,7 @@ public static class Program {
             for (int c = 0; c < array.ColumnCount(); c++) {
                 if (array[r, c] == 0) continue;
 
-                foreach ((int Row, int Col) n in array.Adjacent(r, c, Directions.Cardinal)) {
+                foreach (Point n in array.Adjacent(r, c, Directions.Cardinal)) {
                     if (array[n.Row, n.Col] > 0) {
                         count++;
                     }
@@ -63,7 +58,7 @@ public static class Program {
         return count;
     }
 
-    private static int Part2(List<((int, int) p, (int, int) v)> inputs) {
+    private static int Part2(List<(Point p, Point v)> inputs) {
         int maxAdjacent = 0;
         int steps = 1;
         while (true) {

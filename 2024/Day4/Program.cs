@@ -32,14 +32,14 @@ public static class Program {
 
         int sum = 0;
         foreach (Direction dir in Directions.All.Enumerate()) {
-            (int mR, int mC) = input.Adjacent(xR, xC, dir);
-            if (!input.TryGet(mR, mC, out char m) || m != 'M') continue;
+            Point m = input.Adjacent(xR, xC, dir);
+            if (!input.TryGet(m, out char mC) || mC != 'M') continue;
 
-            (int aR, int aC) = input.Adjacent(mR, mC, dir);
-            if (!input.TryGet(aR, aC, out char a) || a != 'A') continue;
+            Point a = input.Adjacent(m, dir);
+            if (!input.TryGet(a, out char aC) || aC != 'A') continue;
 
-            (int sR, int sC) = input.Adjacent(aR, aC, dir);
-            if (!input.TryGet(sR, sC, out char s) || s != 'S') continue;
+            Point s = input.Adjacent(a, dir);
+            if (!input.TryGet(s, out char sC) || sC != 'S') continue;
 
             sum++;
         }

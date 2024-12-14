@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using UtilExtensions;
+﻿using UtilExtensions;
 
 namespace Day15;
 
@@ -11,7 +10,7 @@ public static class Program {
         List<(Point, Point)> data = new();
         foreach (string line in File.ReadAllLines(file)) {
             int[] args = line.Extract(@"x=(-?\d+), y=(-?\d+).+x=(-?\d+), y=(-?\d+)").Select(int.Parse).ToArray();
-            data.Add((new Point(args[0], args[1]), new Point(args[2], args[3])));
+            data.Add((new Point(args[1], args[0]), new Point(args[3], args[2])));
         }
 
         Console.WriteLine(Part1(data));
@@ -41,7 +40,7 @@ public static class Program {
             int length = distance - delta;
             intervals.Add(scanner.X - length, scanner.X + length);
         }
-        
+
         foreach (Interval interval in remove) {
             intervals.Remove(interval);
         }
@@ -88,7 +87,7 @@ public static class Program {
                         }
                         throw new InvalidOperationException($"Invalid gap in range: {first}");
                     }
-                    
+
                     return (intervals.First().End + 1) * 4000000L + target;
                 }
                 return 0;

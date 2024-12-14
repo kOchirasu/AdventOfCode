@@ -47,11 +47,6 @@ public static class MathUtils {
         return a;
     }
 
-    public static int ManhattanDistance(this (int, int) p1, (int, int) p2) {
-        return Math.Abs(p1.Item1 - p2.Item1) + Math.Abs(p1.Item2 - p2.Item2);
-    }
-
-    public static (int dX, int dY) ManhattanDelta(this (int, int) p1, (int, int) p2) {
-        return (p1.Item1 - p2.Item1, p1.Item2 - p2.Item2);
-    }
+    public static int PositiveMod(this int a, int b) => (a % b + b) % b;
+    public static long PositiveMod(this long a, long b) => (a % b + b) % b;
 }

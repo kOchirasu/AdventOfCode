@@ -16,13 +16,13 @@ public static class Program {
 
     private static int Part1(int[,] input) {
         int rating = 0;
-        foreach ((int Row, int Col) head in input.Find(0)) {
-            var trails = new HashSet<(int, int)>();
-            var queue = new Queue<(int Row, int Col)>();
+        foreach (Point head in input.Find(0)) {
+            var trails = new HashSet<Point>();
+            var queue = new Queue<Point>();
             queue.Enqueue(head);
 
-            while (queue.TryDequeue(out (int Row, int Col) cur)) {
-                foreach ((int Row, int Col) next in input.Adjacent(cur.Row, cur.Col, Directions.Cardinal)) {
+            while (queue.TryDequeue(out Point cur)) {
+                foreach (Point next in input.Adjacent(cur.Row, cur.Col, Directions.Cardinal)) {
                     if (input.TryGet(next.Row, next.Col, out int nextHeight) && nextHeight == input[cur.Row, cur.Col] + 1) {
                         if (nextHeight == 9) {
                             trails.Add(next);
@@ -41,12 +41,12 @@ public static class Program {
 
     private static int Part2(int[,] input) {
         int rating = 0;
-        foreach ((int Row, int Col) head in input.Find(0)) {
-            var queue = new Queue<(int Row, int Col)>();
+        foreach (Point head in input.Find(0)) {
+            var queue = new Queue<Point>();
             queue.Enqueue(head);
 
-            while (queue.TryDequeue(out (int Row, int Col) cur)) {
-                foreach ((int Row, int Col) next in input.Adjacent(cur.Row, cur.Col, Directions.Cardinal)) {
+            while (queue.TryDequeue(out Point cur)) {
+                foreach (Point next in input.Adjacent(cur.Row, cur.Col, Directions.Cardinal)) {
                     if (input.TryGet(next.Row, next.Col, out int nextHeight) && nextHeight == input[cur.Row, cur.Col] + 1) {
                         if (nextHeight == 9) {
                             rating++;

@@ -15,12 +15,12 @@ public static class Program {
     }
 
     private static int Part1(char[,] terrain) {
-        (int, int) start = terrain.Find('S').First();
-        (int, int) end = terrain.Find('E').First();
+        Point start = terrain.Find('S').First();
+        Point end = terrain.Find('E').First();
 
         var graph = terrain.AsGraph(IsValidEdge);
         var tryFunc = graph.ShortestPathsDijkstra(_ => 1, start);
-        if (tryFunc(end, out IEnumerable<TaggedEdge<(int, int), (char, char)>> results)) {
+        if (tryFunc(end, out IEnumerable<TaggedEdge<Point, (char, char)>> results)) {
             return results.Count();
         }
 
@@ -28,14 +28,14 @@ public static class Program {
     }
 
     private static int Part2(char[,] terrain) {
-        IEnumerable<(int, int)> starts = terrain.Find(v => v is 'S' or 'a');
-        (int, int) end = terrain.Find('E').First();
+        IEnumerable<Point> starts = terrain.Find(v => v is 'S' or 'a');
+        Point end = terrain.Find('E').First();
 
         var graph = terrain.AsGraph(IsValidEdge);
         int min = int.MaxValue;
-        foreach ((int, int) start in starts) {
+        foreach (Point start in starts) {
             var tryFunc = graph.ShortestPathsDijkstra(_ => 1, start);
-            if (tryFunc(end, out IEnumerable<TaggedEdge<(int, int), (char, char)>> results)) {
+            if (tryFunc(end, out IEnumerable<TaggedEdge<Point, (char, char)>> results)) {
                 int length = results.Count();
                 min = Math.Min(min, length);
             }
@@ -44,7 +44,7 @@ public static class Program {
         return min;
     }
 
-    private static bool IsValidEdge(TaggedEdge<(int, int), (char Src, char Dst)> edge) {
+    private static bool IsValidEdge(TaggedEdge<Point, (char Src, char Dst)> edge) {
         char src = edge.Tag.Src switch {
             'S' => 'a',
             'E' => 'z',
