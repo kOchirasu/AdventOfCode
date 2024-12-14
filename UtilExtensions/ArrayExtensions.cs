@@ -469,10 +469,10 @@ public static class ArrayExtensions {
         }
     }
 
-    public static IEnumerable<Direction> Enumerate(this Directions dir) {
-        foreach (Direction d in Offsets.Keys) {
-            if (dir.HasFlag((Directions) d)) {
-                yield return d;
+    public static IEnumerable<Direction> Enumerate(this Directions dirs) {
+        foreach (Direction dir in Offsets.Keys) {
+            if ((dirs & (Directions)dir) == (Directions)dir) {
+                yield return dir;
             }
         }
     }
@@ -515,10 +515,13 @@ public static class ArrayExtensions {
         return arr.Adjacent(point.Row, point.Col, dir, options);
     }
 
-    public static IEnumerable<(int Row, int Col)> Adjacent<T>(this T[,] arr, int row, int col, Directions dir, AdjacencyOptions options = AdjacencyOptions.None) {
-        return dir.Enumerate()
-            .Select(d => arr.Adjacent(row, col, d, options))
-            .Where(coord => coord != (-1, -1));
+    public static IEnumerable<(int Row, int Col)> Adjacent<T>(this T[,] arr, int row, int col, Directions dirs, AdjacencyOptions options = AdjacencyOptions.None) {
+        foreach (Direction dir in dirs.Enumerate()) {
+            (int Row, int Col) adjacent = arr.Adjacent(row, col, dir, options);
+            if (adjacent != (-1, -1)) {
+                yield return adjacent;
+            }
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -530,7 +533,7 @@ public static class ArrayExtensions {
         (int dX, int dY) = dir.Delta();
         int r = row + dX;
         int c = col + dY;
-        if (options.HasFlag(AdjacencyOptions.Wrap)) {
+        if ((options & AdjacencyOptions.Wrap) == AdjacencyOptions.Wrap) {
             int rows = arr.RowCount();
             r = (r + rows) % rows;
 
@@ -538,7 +541,7 @@ public static class ArrayExtensions {
             c = (c + cols) % cols;
         }
 
-        if (arr.TryGet(r, c, out T? _) || options.HasFlag(AdjacencyOptions.Expand)) {
+        if (arr.TryGet(r, c, out T? _) || (options & AdjacencyOptions.Expand) == AdjacencyOptions.Expand) {
             return (r, c);
         }
 
