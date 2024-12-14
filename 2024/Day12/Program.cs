@@ -11,93 +11,45 @@ public static class Program {
 
         char[,] input = File.ReadAllLines(file).CharMatrix();
 
-        Console.WriteLine(Part1(input));
-        Console.WriteLine(Part2(input));
+        Console.WriteLine(Part1(input.Copy()));
+        Console.WriteLine(Part2(input.Copy()));
     }
 
-    private static int GetPerimeter(char[,] input, Point[] connected) {
-        int perimeter = connected.Length * 4;
-        foreach (Point point in connected) {
-            perimeter -= input.Adjacent(point, Directions.Cardinal)
-                .Count(adj => input[adj.Row, adj.Col] == input[point.Row, point.Col]);
+    private static int GetPerimeter(bool[,] block) {
+        int perimeter = 0;
+        foreach (Point point in block.Find(true)) {
+            perimeter += block.Adjacent(point, Directions.Cardinal, AdjacencyOptions.Expand)
+                .Count(adj => !block.GetOrDefault(adj));
         }
 
         return perimeter;
     }
 
-    private static IEnumerable<Point> GetConnected(char[,] input, bool[,] visited, Point start) {
-        var queue = new Queue<Point>();
-        queue.Enqueue(start);
-
-        while (queue.TryDequeue(out Point item)) {
-            if (visited[item.Row, item.Col]) continue;
-
-            visited[item.Row, item.Col] = true;
-            yield return item;
-
-            foreach (Point adj in input.Adjacent(item, Directions.Cardinal)) {
-                if (input[adj.Row, adj.Col] == input[start.Row, start.Col]) {
-                    queue.Enqueue(adj);
-                }
-            }
-        }
-    }
-
     private static int Part1(char[,] input) {
         int price = 0;
-        bool[,] visited = input.Select(_ => false);
         for (int r = 0; r < input.RowCount(); r++) {
             for (int c = 0; c < input.ColumnCount(); c++) {
-                if (visited[r, c]) continue;
+                if (input[r, c] == default) continue;
 
-                Point[] connected = GetConnected(input, visited, (r, c)).ToArray();
-                int perimeter = GetPerimeter(input, connected);
+                bool[,] block = input.ExtractBlock((r, c), (c1, c2) => c1 == c2);
+                input = input.Compose(block, (ch, b) => b ? default : ch);
 
-                price += connected.Length * perimeter;
+                int perimeter = GetPerimeter(block);
+
+                price += block.Count(b => b ? 1 : 0) * perimeter;
             }
         }
 
         return price;
     }
 
-    private static int CountSides(Point[] points) {
-        var grid = new DynamicMatrix<char>(@default: '.', expandOnAccess: true);
-        foreach (Point point in points) {
-            grid[point] = '#';
-        }
-        var grid2 = grid.Copy();
-
-        int corners = 0;
-        foreach (Point point in grid.Find('#')) {
-            var cardinal = Directions.N | Directions.E;
-            var diagonal = Direction.NE;
-
-            for (int i = 0; i < 4; i++) {
-                var a1 = grid.Adjacent(point, cardinal, AdjacencyOptions.Expand);
-                var n1 = a1.Select(p => grid[p]).ToArray();
-                var a2 = grid.Adjacent(point, diagonal, AdjacencyOptions.Expand);
-                var n2 = grid[a2];
-
-                if (n1.All(x => x == '#') && n2 != '#' || n1.All(x => x != '#')) {
-                    corners++;
-                    if (grid2[point.Row, point.Col] == '#') {
-                        grid2[point.Row, point.Col] = '1';
-                    } else {
-                        grid2[point.Row, point.Col]++;
-                    }
-                }
-
-                cardinal = cardinal.Rotate(90);
-                diagonal = diagonal.Rotate(90);
-            }
-        }
-
+    private static int CountSides(bool[,] block) {
         int count = 0;
         foreach (Direction dir in Directions.Cardinal.Enumerate()) {
             var sides = new HashSet<Point>();
-            foreach (Point point in grid.Find('#')) {
-                Point adj = grid.Adjacent(point, dir, AdjacencyOptions.Expand);
-                if (grid[adj] == '.') {
+            foreach (Point point in block.Find(true)) {
+                Point adj = block.Adjacent(point, dir, AdjacencyOptions.Expand);
+                if (!block.GetOrDefault(adj)) {
                     sides.Add(adj);
                 }
             }
@@ -108,28 +60,21 @@ public static class Program {
             count += (sides.Count - duplicates);
         }
 
-
         return count;
     }
 
-    private static int CountCorners(Point[] points) {
-        var grid = new DynamicMatrix<char>(@default: '.', expandOnAccess: true);
-        foreach (Point point in points) {
-            grid[point] = '#';
-        }
-
+    private static int CountCorners(bool[,] block) {
         int count = 0;
-        foreach (Point point in grid.Find('#')) {
-            var cardinal = Directions.N | Directions.E;
+        foreach (Point point in block.Find(true)) {
+            Directions cardinal = Directions.N | Directions.E;
             var diagonal = Direction.NE;
 
             for (int i = 0; i < 4; i++) {
-                var a1 = grid.Adjacent(point, cardinal, AdjacencyOptions.Expand);
-                var n1 = a1.Select(p => grid[p]).ToArray();
-                var a2 = grid.Adjacent(point, diagonal, AdjacencyOptions.Expand);
-                var n2 = grid[a2];
-
-                if (n1.All(x => x == '#') && n2 != '#' || n1.All(x => x != '#')) {
+                bool[] n1 = block.Adjacent(point, cardinal, AdjacencyOptions.Expand)
+                    .Select(p => block.GetOrDefault(p))
+                    .ToArray();
+                bool n2 = block.GetOrDefault(block.Adjacent(point, diagonal, AdjacencyOptions.Expand));
+                if (n1.All(x => x) && !n2 || n1.All(x => !x)) {
                     count++;
                 }
 
@@ -143,17 +88,18 @@ public static class Program {
 
     private static int Part2(char[,] input) {
         int price = 0;
-        bool[,] visited = input.Select(_ => false);
         for (int r = 0; r < input.RowCount(); r++) {
             for (int c = 0; c < input.ColumnCount(); c++) {
-                if (visited[r, c]) continue;
+                if (input[r, c] == default) continue;
 
-                Point[] connected = GetConnected(input, visited, (r, c)).ToArray();
-                int sides = CountSides(connected);
-                int corners = CountCorners(connected);
-                Debug.Assert(sides == corners);
+                bool[,] block = input.ExtractBlock((r, c), (c1, c2) => c1 == c2);
+                input = input.Compose(block, (ch, b) => b ? default : ch);
 
-                price += connected.Length * sides;
+                int sides = CountSides(block);
+                int corners = CountCorners(block);
+                Debug.Assert(sides == corners, $"{sides} != {corners}");
+
+                price += block.Count(b => b ? 1 : 0) * sides;
             }
         }
 

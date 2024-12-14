@@ -258,25 +258,25 @@ public static partial class ArrayExtensions {
         return arr.Extract(row, col, rowCount, colCount);
     }
 
-    public static IEnumerable<T[]> ExtractLine<T>(this T[,] arr, int row, int col, Directions dirs, int length) {
+    public static IEnumerable<T[]> ExtractLine<T>(this T[,] arr, Point origin, Directions dirs, int length) {
         foreach (Direction dir in dirs.Enumerate()) {
-            var result = arr.ExtractLine(row, col, dir, length);
+            T[] result = arr.ExtractLine(origin, dir, length);
             if (result.Length > 0) {
                 yield return result;
             }
         }
     }
 
-    public static T[] ExtractLine<T>(this T[,] arr, int row, int col, Direction dir, int length) {
-        if (row < 0 || col < 0 || dir == Direction.Origin || length == 0) {
+    public static T[] ExtractLine<T>(this T[,] arr, Point origin, Direction dir, int length) {
+        if (origin.Row < 0 || origin.Col < 0 || dir == Direction.Origin || length == 0) {
             return Array.Empty<T>();
         }
 
-        (int dX, int dY) = dir.Delta();
+        (int dR, int dC) = dir.Delta();
         var result = new T[length];
         bool ok = true;
         for (int i = 0; i < length; i++) {
-            if (!arr.TryGet(row + dX * i, col + dY * i, out T? value)) {
+            if (!arr.TryGet(origin + (dR * i, dC * i), out T? value)) {
                 ok = false;
                 break;
             }
@@ -285,6 +285,38 @@ public static partial class ArrayExtensions {
         }
 
         return ok ? result : Array.Empty<T>();
+    }
+
+    public static TR[,] ExtractBlock<T, TR>(
+        this T[,] arr,
+        Point origin, Func<T, T, TR> fill,
+        Directions dirs = Directions.Cardinal,
+        AdjacencyOptions options = AdjacencyOptions.None) where T : struct
+                                                          where TR : struct {
+        bool[,] visited = new bool[arr.RowCount(), arr.ColumnCount()];
+        var queue = new Queue<Point>();
+        queue.Enqueue(origin);
+        visited[origin.Row, origin.Col] = true;
+
+        var result = new TR[arr.RowCount(), arr.ColumnCount()];
+        result[origin.Row, origin.Col] = fill(arr[origin.Row, origin.Col], arr[origin.Row, origin.Col]);
+
+        while (queue.TryDequeue(out Point next)) {
+            foreach (Point adj in result.Adjacent(next, dirs, options)) {
+                if (visited[adj.Row, adj.Col]) {
+                    continue;
+                }
+
+                visited[adj.Row, adj.Col] = true;
+                TR value = fill(arr[next.Row, next.Col], arr[adj.Row, adj.Col]);
+                if (!value.Equals(default(TR))) {
+                    result[adj.Row, adj.Col] = value;
+                    queue.Enqueue(adj);
+                }
+            }
+        }
+
+        return result;
     }
 
     public static T[,] Rotate<T>(this T[,] arr, int n = 1) {
@@ -511,6 +543,16 @@ public static partial class ArrayExtensions {
         }
     }
 
+    public static IEnumerable<(Point Point, T Value)> Iterate<T>(this T[,] arr) {
+        int rows = arr.RowCount();
+        int cols = arr.ColumnCount();
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                yield return (new Point(r, c), arr[r, c]);
+            }
+        }
+    }
+
     public static int Sum(this int[,] items) {
         int rows = items.RowCount();
         int cols = items.ColumnCount();
@@ -522,6 +564,14 @@ public static partial class ArrayExtensions {
         }
 
         return sum;
+    }
+
+    public static int Count<T>(this T[,] arr) {
+        return arr.RowCount() * arr.ColumnCount();
+    }
+
+    public static int Count<T>(this T[,] arr, Func<T, int> predicate) {
+        return arr.Select(predicate).Sum();
     }
 
     public static IEnumerable<T> Where<T>(this T[,] arr, Func<T, bool> predicate) {

@@ -64,10 +64,10 @@ public static class Program {
         }
 
         (int dX, int dY) = Direction.NE.Delta();
-        string cross1 = string.Join("", input.ExtractLine(r + dX, c + dY, Direction.NE.Rotate(180), 3));
+        string cross1 = string.Join("", input.ExtractLine((r + dX, c + dY), Direction.NE.Rotate(180), 3));
 
         (dX, dY) = Direction.NW.Delta();
-        string cross2 = string.Join("", input.ExtractLine(r + dX, c + dY, Direction.NW.Rotate(180), 3));
+        string cross2 = string.Join("", input.ExtractLine((r + dX, c + dY), Direction.NW.Rotate(180), 3));
 
         return (cross1 is "MAS" or "SAM") && (cross2 is "MAS" or "SAM") ? 1 : 0;
     }
