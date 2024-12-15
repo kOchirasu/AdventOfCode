@@ -85,27 +85,17 @@ public static class Program {
         return grid;
     }
 
-    private static bool TryPush(char[,] grid, Point pos, Direction dir, bool mutate) {
+    private static bool TryPush(char[,] grid, Point pos, Direction dir, HashSet<Point> pushed) {
         switch (dir) {
             case Direction.E or Direction.W:
                 Point search = pos;
                 while (grid.GetOrDefault(search) is '[' or ']') {
+                    pushed.Add(search);
                     search = grid.Adjacent(search, dir);
                 }
 
                 if (grid.GetOrDefault(search) != '.') {
                     return false;
-                }
-
-                if (mutate) {
-                    int len = Math.Abs(pos.Col - search.Col);
-                    char[] line = grid.ExtractLine(pos, dir, len);
-                    if (dir == Direction.W) {
-                        line = line.Reverse().ToArray();
-                        grid.Insert(line, pos.Row, pos.Col - len);
-                    } else {
-                        grid.Insert(line, pos.Row, pos.Col + 1);
-                    }
                 }
 
                 return true;
@@ -123,23 +113,19 @@ public static class Program {
                     return false;
                 }
 
-                if (ac1 != '.' && !TryPush(grid, a1, dir, mutate)) {
+                if (ac1 != '.' && !TryPush(grid, a1, dir, pushed)) {
                     return false;
                 }
 
                 // Skip right push if box was already pushed at p1.
                 if (ac1 != grid.GetOrDefault(p1)) {
-                    if (ac2 != '.' && !TryPush(grid, a2, dir, mutate)) {
+                    if (ac2 != '.' && !TryPush(grid, a2, dir, pushed)) {
                         return false;
                     }
                 }
 
-                if (mutate) {
-                    grid[a1.Row, a1.Col] = grid[p1.Row, p1.Col];
-                    grid[a2.Row, a2.Col] = grid[p2.Row, p2.Col];
-                    grid[p1.Row, p1.Col] = '.';
-                    grid[p2.Row, p2.Col] = '.';
-                }
+                pushed.Add(p1);
+                pushed.Add(p2);
                 return true;
             default:
                 throw new ArgumentException($"Invalid direction: {dir}");
@@ -161,10 +147,18 @@ public static class Program {
                 case '#':
                     continue;
                 case '[' or ']':
-                    if (TryPush(grid, next, dir, mutate:false)) {
-                        TryPush(grid, next, dir, mutate:true);
-                        grid[next.Row, next.Col] = '@';
-                        grid[cur.Row, cur.Col] = '.';
+                    var pushed = new HashSet<Point> {cur};
+                    if (TryPush(grid, next, dir, pushed)) {
+                        char[,] copy = grid.Copy();
+                        foreach (Point move in pushed) {
+                            copy[move.Row, move.Col] = '.';
+                        }
+                        foreach (Point move in pushed) {
+                            Point adj = grid.Adjacent(move, dir);
+                            copy[adj.Row, adj.Col] = grid.GetOrDefault(move);
+                        }
+
+                        grid = copy;
                         cur = next;
                     }
                     continue;
