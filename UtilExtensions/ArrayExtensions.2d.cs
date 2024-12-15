@@ -180,6 +180,12 @@ public static partial class ArrayExtensions {
         return result;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Insert<T>(this T[,] arr, T[] insert, int row, int col, bool strictBounds = true) {
+        T[][] insert2d = {insert};
+        arr.Insert(insert2d.UnJagged(), row, col, strictBounds);
+    }
+
     public static void Insert<T>(this T[,] arr, T[,] insert, int row, int col, bool strictBounds = true) {
         if (strictBounds && (row < 0 || col < 0)) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");

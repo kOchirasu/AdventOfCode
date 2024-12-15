@@ -529,4 +529,23 @@ public class ArrayExtensionsTests {
     public void RotateTest(Directions dirs, int degrees, Directions expected) {
         Assert.AreEqual(expected, dirs.Rotate(degrees));
     }
+
+    [Test]
+    public void ContainsTest() {
+        int[,] source = {
+            { 1, 2, 3, 4 },
+            { 5, 6, 7, 8 },
+            { 9, 10, 11, 12 },
+        };
+
+        int[,] target = {
+            { 6, 7 },
+            { 10, 11 },
+        };
+
+        Assert.True(source.Contains(target));
+
+        Assert.True(source.Jagged()[1].Contains(target.Jagged()[0]));
+        Assert.False(source.Jagged()[0].Contains(target.Jagged()[0]));
+    }
 }
