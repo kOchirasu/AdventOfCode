@@ -86,6 +86,32 @@ public static partial class ArrayExtensions {
         return result;
     }
 
+    public static bool Contains<T>(this T[] source, T[] target, EqualityComparer<T>? comparer = null) {
+        if (target.Length == 0) {
+            return true;
+        }
+        if (source.Length < target.Length) {
+            return false;
+        }
+
+        comparer ??= EqualityComparer<T>.Default;
+        for (int i = 0; i <= source.Length - target.Length; i++) {
+            bool match = true;
+            for (int j = 0; j < target.Length; j++) {
+                if (!comparer.Equals(source[i + j], target[j])) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static IEnumerable<T> Convert<T>(this IEnumerable<string> arr) where T : IConvertible {
         return arr.Select(i => (T) System.Convert.ChangeType(i, typeof(T)));
     }

@@ -75,7 +75,7 @@ public static partial class ArrayExtensions {
         return arr[row, col, dep];
     }
 
-     public static T[] GetColumn<T>(this T[,] arr, Index index) {
+    public static T[] GetColumn<T>(this T[,] arr, Index index) {
         int rows = arr.RowCount();
         int cols = arr.ColumnCount();
         int col = index.GetOffset(cols);
@@ -205,7 +205,7 @@ public static partial class ArrayExtensions {
         }
     }
 
-    public static void ConditionalInsert<T>(this T[,] arr, T[,] insert, int row, int col, Func<T, bool> shouldInsert, bool strictBounds = true)  {
+    public static void ConditionalInsert<T>(this T[,] arr, T[,] insert, int row, int col, Func<T, bool> shouldInsert, bool strictBounds = true) {
         if (strictBounds && (row < 0 || col < 0)) {
             throw new IndexOutOfRangeException("Index was out of range. Must be non-negative");
         }
@@ -608,5 +608,40 @@ public static partial class ArrayExtensions {
                 }
             }
         }
+    }
+
+    public static bool Contains<T>(this T[,] source, T[,] target, EqualityComparer<T>? comparer = null) {
+        int sourceRows = source.RowCount();
+        int sourceCols = source.ColumnCount();
+        int targetRows = target.RowCount();
+        int targetCols = target.ColumnCount();
+        if (targetRows > sourceRows || targetCols > sourceCols) {
+            return false;
+        }
+
+        comparer ??= EqualityComparer<T>.Default;
+        for (int i = 0; i <= sourceRows - targetRows; i++) {
+            for (int j = 0; j <= sourceCols - targetCols; j++) {
+                bool match = true;
+                for (int r = 0; r < targetRows; r++) {
+                    for (int c = 0; c < targetCols; c++) {
+                        if (!comparer.Equals(source[i + r, j + c], target[r, c])) {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (!match) {
+                        break;
+                    }
+                }
+
+                if (match) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
