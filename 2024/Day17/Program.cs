@@ -4,8 +4,6 @@ namespace Day17;
 
 // https://adventofcode.com/
 public static class Program {
-
-
     public static void Main() {
         string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "input.txt");
 
@@ -20,14 +18,6 @@ public static class Program {
     private static long[] Simulate(long[] register, int[,] ops) {
         var output = new List<long>();
         for (int i = 0; i < ops.RowCount(); i++) {
-            long combo = ops[i, 1] switch {
-                0 or 1 or 2 or 3 => ops[i, 1],
-                4 => register[0],
-                5 => register[1],
-                6 => register[2],
-                _ => throw new ArgumentException($"INVALID COMBO OP: {ops[i, 1]}")
-            };
-
             switch (ops[i, 0]) {
                 // The adv instruction (opcode 0) performs division.
                 // - The numerator is the value in the A register.
@@ -35,7 +25,7 @@ public static class Program {
                 //   (So, an operand of 2 would divide A by 4 (2^2); an operand of 5 would divide A by 2^B.)
                 // - The result of the division operation is truncated to an integer and then written to the A register.
                 case 0:
-                    register[0] = (long) (register[0] / Math.Pow(2, combo));
+                    register[0] = (long) (register[0] / Math.Pow(2, GetCombo(ops[i, 1])));
                     break;
                 // The bxl instruction (opcode 1) calculates the bitwise XOR of register B and the instruction's literal operand,
                 // then stores the result in register B.
@@ -45,7 +35,7 @@ public static class Program {
                 // The bst instruction (opcode 2) calculates the value of its combo operand modulo 8 (thereby keeping only its lowest 3 bits),
                 // then writes that value to the B register.
                 case 2:
-                    register[1] = combo % 8;
+                    register[1] = GetCombo(ops[i, 1]) % 8;
                     break;
                 // The jnz instruction (opcode 3) does nothing if the A register is 0.
                 // However, if the A register is not zero, it jumps by setting the instruction pointer to the value of its literal operand;
@@ -66,22 +56,32 @@ public static class Program {
                 // The out instruction (opcode 5) calculates the value of its combo operand modulo 8, then outputs that value.
                 // (If a program outputs multiple values, they are separated by commas.)
                 case 5:
-                    output.Add(combo % 8);
+                    output.Add(GetCombo(ops[i, 1]) % 8);
                     break;
                 // The bdv instruction (opcode 6) works exactly like the adv instruction except that the result is stored in the B register.
                 // (The numerator is still read from the A register.)
                 case 6:
-                    register[1] = (long) (register[0] / Math.Pow(2, combo));
+                    register[1] = (long) (register[0] / Math.Pow(2, GetCombo(ops[i, 1])));
                     break;
                 // The cdv instruction (opcode 7) works exactly like the adv instruction except that the result is stored in the C register.
                 // (The numerator is still read from the A register.)
                 case 7:
-                    register[2] = (long) (register[0] / Math.Pow(2, combo));
+                    register[2] = (long) (register[0] / Math.Pow(2, GetCombo(ops[i, 1])));
                     break;
             }
         }
 
         return output.ToArray();
+
+        long GetCombo(int val) {
+            return val switch {
+                0 or 1 or 2 or 3 => val,
+                4 => register[0],
+                5 => register[1],
+                6 => register[2],
+                _ => throw new ArgumentException($"INVALID COMBO OP: {val}")
+            };
+        }
     }
 
     private static string Part1(long[] register, int[,] ops) {
@@ -134,9 +134,15 @@ public static class Program {
         }
 
         // Filter valid results and find minimum value.
-        return prevValues.Where(value => {
-            long[] result = Simulate([value, 0, 0], ops);
-            return target.SequenceEqual(result);
-        }).Min();
+        return prevValues.Order()
+            .Where(value => {
+                long[] result = Simulate([value, 0, 0], ops);
+                return target.SequenceEqual(result);
+            })
+            // .Select(value => {
+            //     Console.WriteLine($"{value}\t: {Convert.ToString(value, 2).PadLeft(48, '0')}");
+            //     return value;
+            // })
+            .Min();
     }
 }
