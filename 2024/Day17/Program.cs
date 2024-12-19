@@ -115,8 +115,8 @@ public static class Program {
         for (int i = 0; i < target.Length; i++) {
             var nextValues = new HashSet<long>();
             foreach (long prevValue in prevValues) {
-                // Since there can be a shift of up to 7 bits, we must check in groups of 8 bits.
-                for (long j = 0; j <= 0b11111111; j++) {
+                // Since there can be a shift of up to 7 bits, we must check in groups of 10 (7+3) bits.
+                for (long j = 0; j <= 0b1111111111; j++) {
                     long tryVal = j << 3 * i | prevValue;
 
                     long[] result = Simulate([tryVal, 0, 0], ops);
