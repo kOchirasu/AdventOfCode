@@ -87,8 +87,8 @@ public static class Program {
         // Avoid paths that change directions multiple times.
         bool IsMixed(string path) {
             int changes = 0;
-            for (int i = 1; i < path.Length; i++) {
-                if (path[i - 1] != path[i]) {
+            foreach ((char a, char b) in path.Pairwise()) {
+                if (a != b) {
                     changes++;
                 }
             }
@@ -111,16 +111,16 @@ public static class Program {
         foreach (string line in input) {
             var prevSeq = new StringBuilder();
             string robot0 = $"A{line}";
-            for (int i = 1; i < robot0.Length; i++) {
-                string seq = GetSequence(NumPaths, robot0[i - 1], robot0[i]);
+            foreach ((char a, char b) in robot0.Pairwise()) {
+                string seq = GetSequence(NumPaths, a, b);
                 prevSeq.Append(seq);
             }
 
             foreach (int _ in Enumerable.Range(0, 2)) {
                 var next = new StringBuilder();
                 string robot = $"A{prevSeq}";
-                for (int i = 1; i < robot.Length; i++) {
-                    string seq = GetSequence(DirPaths, robot[i - 1], robot[i]);
+                foreach ((char a, char b) in robot.Pairwise()) {
+                    string seq = GetSequence(DirPaths, a, b);
                     next.Append(seq);
                 }
 
@@ -141,16 +141,16 @@ public static class Program {
 
         string robot = $"A{value}";
         if (count == 1) {
-            for (int i = 1; i < robot.Length; i++) {
-                total += GetSequence(DirPaths, robot[i - 1], robot[i]).Length;
+            foreach ((char a, char b) in robot.Pairwise()) {
+                total += GetSequence(DirPaths, a, b).Length;
             }
 
             ExpandCounts[(value, count)] = total;
             return total;
         }
 
-        for (int i = 1; i < robot.Length; i++) {
-            total += ExpandCount(GetSequence(DirPaths, robot[i - 1], robot[i]), count - 1);
+        foreach ((char a, char b) in robot.Pairwise()) {
+            total += ExpandCount(GetSequence(DirPaths, a, b), count - 1);
         }
 
         ExpandCounts[(value, count)] = total;
@@ -162,8 +162,8 @@ public static class Program {
         foreach (string line in input) {
             List<string> sequences = [];
             string robot = $"A{line}";
-            for (int i = 1; i < robot.Length; i++) {
-                sequences.Add(GetSequence(NumPaths, robot[i - 1], robot[i]));
+            foreach ((char a, char b) in robot.Pairwise()) {
+                sequences.Add(GetSequence(NumPaths, a, b));
             }
 
             long total = 0;

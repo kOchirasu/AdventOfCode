@@ -23,6 +23,18 @@ public static class EnumerableExtensions {
         }
     }
 
+    public static IEnumerable<(T, T)> Pairwise<T>(this IEnumerable<T> enumerable) {
+        using IEnumerator<T> it = enumerable.GetEnumerator();
+        if (!it.MoveNext()) {
+            yield break;
+        }
+
+        T prev = it.Current;
+        while (it.MoveNext()) {
+            yield return (prev, prev = it.Current);
+        }
+    }
+
     public static T? ElementAtOrDefault<T>(this IList<T> list, int index, T? fallback = default) {
         if (list == null) {
             throw new ArgumentNullException(nameof(list));
