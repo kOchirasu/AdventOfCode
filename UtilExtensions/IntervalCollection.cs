@@ -11,6 +11,10 @@ public class IntervalCollection : ICollection<Interval> {
         intervals = new SortedSet<Interval>();
     }
 
+    public IntervalCollection(IEnumerable<Interval> intervals) {
+        this.intervals = new SortedSet<Interval>(intervals);
+    }
+
     public void Reduce() {
         var stack = new Stack<Interval>();
         using SortedSet<Interval>.Enumerator enumerator = intervals.GetEnumerator();
@@ -37,15 +41,15 @@ public class IntervalCollection : ICollection<Interval> {
         intervals = new SortedSet<Interval>(stack);
     }
 
-    public void Clamp(int min, int max) {
+    public void Clamp(long min, long max) {
         var result = new SortedSet<Interval>();
         foreach (Interval interval in intervals) {
             if (interval.End < min || interval.Start > max) {
                 continue;
             }
 
-            int start = Math.Max(interval.Start, min);
-            int end = Math.Min(interval.End, max);
+            long start = Math.Max(interval.Start, min);
+            long end = Math.Min(interval.End, max);
             result.Add(new Interval(start, end));
         }
 
@@ -56,12 +60,22 @@ public class IntervalCollection : ICollection<Interval> {
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public void Add(int start, int end) => Add(new Interval(start, end));
+    public void Add(long start, long end) => Add(new Interval(start, end));
     public void Add(Interval item) => intervals.Add(item);
 
     public void Clear() => intervals.Clear();
 
     public bool Contains(Interval item) => intervals.Contains(item);
+
+    public bool Contains(long value) {
+        foreach (Interval interval in intervals) {
+            if (interval.Contains(value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public void CopyTo(Interval[] array, int arrayIndex) => intervals.CopyTo(array, arrayIndex);
 
@@ -111,10 +125,10 @@ public class IntervalCollection : ICollection<Interval> {
     public bool IsReadOnly => false;
 }
 
-public record struct Interval(int Start, int End) : IComparable<Interval> {
-    public int Size => End - Start + 1;
+public record struct Interval(long Start, long End) : IComparable<Interval> {
+    public long Size => End - Start + 1;
 
-    public static implicit operator Interval(int n) {
+    public static implicit operator Interval(long n) {
         return new Interval(n, n);
     }
 

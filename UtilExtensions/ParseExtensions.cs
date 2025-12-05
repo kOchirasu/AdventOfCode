@@ -88,8 +88,8 @@ public static class ParseExtensions {
         return str.StringList().Select(int.Parse).ToArray();
     }
 
-    public static int[] LongList(this string str) {
-        return str.StringList().Select(int.Parse).ToArray();
+    public static long[] LongList(this string str) {
+        return str.StringList().Select(long.Parse).ToArray();
     }
 
     public static string[,] StringMatrix(this string str, [RegexPattern] string pattern = " +") {
