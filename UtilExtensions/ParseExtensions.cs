@@ -10,7 +10,7 @@ namespace UtilExtensions;
 
 public static class ParseExtensions {
     public static string[] Groups(this string str, bool trim = false) {
-        string[] result = str.Replace("\r", "")
+        string[] result = Regex.Replace(str.Replace("\r", ""), "\n +\n", "\n\n")
             .Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
         if (trim) {
             for (int i = 0; i < result.Length; i++) {

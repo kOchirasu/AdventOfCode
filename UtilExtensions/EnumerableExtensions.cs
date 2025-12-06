@@ -54,4 +54,8 @@ public static class EnumerableExtensions {
     public static string PrettyString<T>(this IEnumerable<T> arr, string delimiter = " ") {
         return string.Join(delimiter, arr);
     }
+
+    public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable) {
+        return enumerable.SelectMany(x => x);
+    }
 }
