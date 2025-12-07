@@ -17,7 +17,7 @@ public static class Program {
         Console.WriteLine(Part2(data));
     }
 
-    private static int Part1(IList<(Point, Point)> data, int target = 2000000) {
+    private static long Part1(IList<(Point, Point)> data, int target = 2000000) {
         var intervals = new IntervalCollection();
         var remove = new IntervalCollection();
         foreach ((Point scanner, Point beacon) in data) {
@@ -76,7 +76,7 @@ public static class Program {
 
                 intervals.Reduce();
                 intervals.Clamp(0, limit);
-                int count = intervals.Select(interval => interval.Size).Sum();
+                long count = intervals.Select(interval => interval.Size).Sum();
                 if (count != limit + 1) {
                     Interval first = intervals.First();
                     if (intervals.Count == 1) {
