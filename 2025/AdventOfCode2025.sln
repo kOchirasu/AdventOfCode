@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilExtensions.Tests", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Day7", "Day7\Day7.csproj", "{AF6CC8EB-1A81-4FA2-BAD6-5AE366C3E2ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Day8", "Day8\Day8.csproj", "{BADC7810-D8EA-4E0B-BFC2-AE1BCA6D0646}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{AF6CC8EB-1A81-4FA2-BAD6-5AE366C3E2ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF6CC8EB-1A81-4FA2-BAD6-5AE366C3E2ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF6CC8EB-1A81-4FA2-BAD6-5AE366C3E2ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BADC7810-D8EA-4E0B-BFC2-AE1BCA6D0646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BADC7810-D8EA-4E0B-BFC2-AE1BCA6D0646}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BADC7810-D8EA-4E0B-BFC2-AE1BCA6D0646}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BADC7810-D8EA-4E0B-BFC2-AE1BCA6D0646}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
