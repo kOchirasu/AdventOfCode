@@ -5,6 +5,8 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using QuikGraph;
+using QuikGraph.Algorithms.ConnectedComponents;
 
 namespace UtilExtensions;
 
@@ -125,5 +127,19 @@ public static class ParseExtensions {
         stream.Position = 0;
 
         return (T) formatter.Deserialize(stream);
+    }
+
+    public static IEnumerable<UndirectedGraph<T, Edge<T>>> SubGraphs<T>(this UndirectedGraph<T, Edge<T>> graph) {
+        var algorithm = new ConnectedComponentsAlgorithm<T, Edge<T>>(graph);
+        algorithm.Compute();
+
+        foreach (IEnumerable<T> group in algorithm.Components.GroupBy(pair => pair.Value).Select(group => group.Select(pair => pair.Key))) {
+            var subgraph = new UndirectedGraph<T, Edge<T>>();
+            foreach (T vertex in group) {
+                subgraph.AddVerticesAndEdgeRange(graph.AdjacentEdges(vertex));
+            }
+
+            yield return subgraph;
+        }
     }
 }
