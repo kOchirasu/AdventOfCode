@@ -36,14 +36,8 @@ public static class Program {
             return false;
         }
 
-        // Ensure indexB > indexA so removal is safe.
-        if (indexB < indexA) {
-            (indexA, indexB) = (indexB, indexA);
-        }
-
-        HashSet<Vector3> removed = list[indexB];
+        list[indexA].UnionWith(list[indexB]);
         list.RemoveAt(indexB);
-        list[indexA].UnionWith(removed);
         return true;
     }
 
